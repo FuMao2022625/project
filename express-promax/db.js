@@ -104,16 +104,9 @@ async function initializeDatabase() {
     }
     console.log('用户表已创建或已存在');
     
-    // 检查热成像表是否存在（先删除，因为它引用了其他表）
-    const [thermalImageTables] = await testConnection.query(
-      "SHOW TABLES LIKE 'thermal_images'"
-    );
-    
-    if (thermalImageTables.length > 0) {
-      // 如果表存在，先删除
-      await testConnection.query("DROP TABLE IF EXISTS thermal_images");
-      console.log('旧的热成像表已删除');
-    }
+    // 首先删除可能存在的热成像表（因为它引用了其他表）
+    await testConnection.query("DROP TABLE IF EXISTS thermal_images");
+    console.log('热成像表已删除（如果存在）');
     
     // 检查机器人表是否存在
     const [robotTables] = await testConnection.query(
@@ -173,33 +166,7 @@ async function initializeDatabase() {
     `);
     console.log('环境表已创建');
     
-    // 创建热成像表
-    await testConnection.query(`
-      CREATE TABLE thermal_images (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        image_id VARCHAR(50) UNIQUE NOT NULL,
-        robot_id VARCHAR(50) NOT NULL,
-        environment_id VARCHAR(50) NOT NULL,
-        capture_time DATETIME NOT NULL,
-        path VARCHAR(255) NOT NULL,
-        width INT NOT NULL,
-        height INT NOT NULL,
-        min_temperature DECIMAL(5,2) NULL,
-        max_temperature DECIMAL(5,2) NULL,
-        status ENUM('正常', '异常', '处理中') DEFAULT '正常',
-        file_size BIGINT NULL,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-        FOREIGN KEY (robot_id) REFERENCES robots(robot_id) ON DELETE CASCADE,
-        FOREIGN KEY (environment_id) REFERENCES environments(environment_id) ON DELETE CASCADE,
-        INDEX idx_image_id (image_id),
-        INDEX idx_robot_id (robot_id),
-        INDEX idx_environment_id (environment_id),
-        INDEX idx_capture_time (capture_time),
-        INDEX idx_status (status)
-      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-    `);
-    console.log('热成像表已创建');
+
     
     // 如果存在旧的images表，删除它
     const [oldImageTables] = await testConnection.query(
