@@ -104,27 +104,26 @@ async function initializeDatabase() {
     }
     console.log('用户表已创建或已存在');
     
+    // 检查热成像表是否存在（先删除，因为它引用了其他表）
+    const [thermalImageTables] = await testConnection.query(
+      "SHOW TABLES LIKE 'thermal_images'"
+    );
+    
+    if (thermalImageTables.length > 0) {
+      // 如果表存在，先删除
+      await testConnection.query("DROP TABLE IF EXISTS thermal_images");
+      console.log('旧的热成像表已删除');
+    }
+    
     // 检查机器人表是否存在
     const [robotTables] = await testConnection.query(
       "SHOW TABLES LIKE 'robots'"
     );
     
-    if (robotTables.length === 0) {
-      // 创建机器人表
-      await testConnection.query(`
-        CREATE TABLE robots (
-          id INT AUTO_INCREMENT PRIMARY KEY,
-          robot_id VARCHAR(50) UNIQUE NOT NULL,
-          model VARCHAR(100) NOT NULL,
-          name VARCHAR(100) NOT NULL,
-          status ENUM('online', 'offline', 'maintenance') DEFAULT 'offline',
-          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-      `);
-      console.log('机器人表已创建');
-    } else {
-      console.log('机器人表已存在');
+    if (robotTables.length > 0) {
+      // 如果表存在，先删除
+      await testConnection.query("DROP TABLE IF EXISTS robots");
+      console.log('旧的机器人表已删除');
     }
     
     // 检查环境表是否存在
@@ -132,50 +131,84 @@ async function initializeDatabase() {
       "SHOW TABLES LIKE 'environments'"
     );
     
-    if (environmentTables.length === 0) {
-      // 创建环境表
-      await testConnection.query(`
-        CREATE TABLE environments (
-          id INT AUTO_INCREMENT PRIMARY KEY,
-          environment_id VARCHAR(50) UNIQUE NOT NULL,
-          name VARCHAR(100) NOT NULL,
-          location VARCHAR(255) NOT NULL,
-          type VARCHAR(50) NOT NULL,
-          temperature DECIMAL(5,2) NULL,
-          humidity DECIMAL(5,2) NULL,
-          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-      `);
-      console.log('环境表已创建');
-    } else {
-      console.log('环境表已存在');
+    if (environmentTables.length > 0) {
+      // 如果表存在，先删除
+      await testConnection.query("DROP TABLE IF EXISTS environments");
+      console.log('旧的环境表已删除');
     }
     
-    // 检查成像表是否存在
-    const [imageTables] = await testConnection.query(
+    // 创建机器人表
+    await testConnection.query(`
+      CREATE TABLE robots (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        robot_id VARCHAR(50) UNIQUE NOT NULL,
+        model VARCHAR(100) NOT NULL,
+        name VARCHAR(100) NOT NULL,
+        status ENUM('在线', '离线', '维护中') DEFAULT '离线',
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        INDEX idx_robot_id (robot_id),
+        INDEX idx_status (status)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+    `);
+    console.log('机器人表已创建');
+    
+    // 创建环境表
+    await testConnection.query(`
+      CREATE TABLE environments (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        environment_id VARCHAR(50) UNIQUE NOT NULL,
+        name VARCHAR(100) NOT NULL UNIQUE,
+        longitude DECIMAL(10,6) NULL,
+        latitude DECIMAL(10,6) NULL,
+        type ENUM('室内', '室外', '工业车间') DEFAULT '室内',
+        temperature DECIMAL(5,2) NULL,
+        humidity DECIMAL(5,2) NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        INDEX idx_environment_id (environment_id),
+        INDEX idx_name (name),
+        INDEX idx_location (longitude, latitude)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+    `);
+    console.log('环境表已创建');
+    
+    // 创建热成像表
+    await testConnection.query(`
+      CREATE TABLE thermal_images (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        image_id VARCHAR(50) UNIQUE NOT NULL,
+        robot_id VARCHAR(50) NOT NULL,
+        environment_id VARCHAR(50) NOT NULL,
+        capture_time DATETIME NOT NULL,
+        path VARCHAR(255) NOT NULL,
+        width INT NOT NULL,
+        height INT NOT NULL,
+        min_temperature DECIMAL(5,2) NULL,
+        max_temperature DECIMAL(5,2) NULL,
+        status ENUM('正常', '异常', '处理中') DEFAULT '正常',
+        file_size BIGINT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (robot_id) REFERENCES robots(robot_id) ON DELETE CASCADE,
+        FOREIGN KEY (environment_id) REFERENCES environments(environment_id) ON DELETE CASCADE,
+        INDEX idx_image_id (image_id),
+        INDEX idx_robot_id (robot_id),
+        INDEX idx_environment_id (environment_id),
+        INDEX idx_capture_time (capture_time),
+        INDEX idx_status (status)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+    `);
+    console.log('热成像表已创建');
+    
+    // 如果存在旧的images表，删除它
+    const [oldImageTables] = await testConnection.query(
       "SHOW TABLES LIKE 'images'"
     );
     
-    if (imageTables.length === 0) {
-      // 创建成像表
-      await testConnection.query(`
-        CREATE TABLE images (
-          id INT AUTO_INCREMENT PRIMARY KEY,
-          image_id VARCHAR(50) UNIQUE NOT NULL,
-          robot_id VARCHAR(50) NOT NULL,
-          capture_time TIMESTAMP NOT NULL,
-          path VARCHAR(255) NOT NULL,
-          format VARCHAR(20) NOT NULL,
-          resolution VARCHAR(20) NOT NULL,
-          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-          FOREIGN KEY (robot_id) REFERENCES robots(robot_id) ON DELETE CASCADE
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-      `);
-      console.log('成像表已创建');
-    } else {
-      console.log('成像表已存在');
+    if (oldImageTables.length > 0) {
+      await testConnection.query("DROP TABLE images");
+      console.log('旧的成像表已删除');
     }
     
     console.log('数据库连接成功');
@@ -195,6 +228,19 @@ async function initializeDatabase() {
 pool.on('error', (err) => {
   console.error('MySQL连接池错误:', err);
 });
+
+// 当直接运行此文件时，初始化数据库
+if (require.main === module) {
+  initializeDatabase()
+    .then(() => {
+      console.log('数据库初始化完成');
+      process.exit(0);
+    })
+    .catch((error) => {
+      console.error('数据库初始化失败:', error);
+      process.exit(1);
+    });
+}
 
 module.exports = {
   pool,

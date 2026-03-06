@@ -12,13 +12,13 @@ function generateRandomString(length) {
 
 // 生成随机状态
 function getRandomStatus() {
-  const statuses = ['online', 'offline', 'maintenance'];
+  const statuses = ['在线', '离线', '维护中'];
   return statuses[Math.floor(Math.random() * statuses.length)];
 }
 
 // 生成随机环境类型
 function getRandomEnvironmentType() {
-  const types = ['indoor', 'outdoor', 'warehouse', 'factory', 'laboratory'];
+  const types = ['室内', '室外', '工业车间'];
   return types[Math.floor(Math.random() * types.length)];
 }
 
@@ -76,6 +76,16 @@ async function insertRobotData() {
   }
 }
 
+// 生成随机经度
+function getRandomLongitude() {
+  return (Math.random() * 360 - 180).toFixed(6); // -180 to 180
+}
+
+// 生成随机纬度
+function getRandomLatitude() {
+  return (Math.random() * 180 - 90).toFixed(6); // -90 to 90
+}
+
 // 插入环境测试数据
 async function insertEnvironmentData() {
   try {
@@ -84,14 +94,15 @@ async function insertEnvironmentData() {
     for (let i = 1; i <= 20; i++) {
       const environmentId = `ENV_${i.toString().padStart(3, '0')}`;
       const name = `Environment ${i}`;
-      const location = `Location ${i}, Building ${Math.floor(Math.random() * 10) + 1}`;
+      const longitude = getRandomLongitude();
+      const latitude = getRandomLatitude();
       const type = getRandomEnvironmentType();
       const temperature = getRandomTemperature();
       const humidity = getRandomHumidity();
       
       await connection.query(
-        'INSERT INTO environments (environment_id, name, location, type, temperature, humidity) VALUES (?, ?, ?, ?, ?, ?)',
-        [environmentId, name, location, type, temperature, humidity]
+        'INSERT INTO environments (environment_id, name, longitude, latitude, type, temperature, humidity) VALUES (?, ?, ?, ?, ?, ?, ?)',
+        [environmentId, name, longitude, latitude, type, temperature, humidity]
       );
     }
     
@@ -103,8 +114,36 @@ async function insertEnvironmentData() {
   }
 }
 
-// 插入成像测试数据
-async function insertImageData() {
+// 生成随机宽度
+function getRandomWidth() {
+  return Math.floor(Math.random() * 2048) + 640; // 640-2688
+}
+
+// 生成随机高度
+function getRandomHeight() {
+  return Math.floor(Math.random() * 1536) + 480; // 480-2016
+}
+
+// 生成随机温度范围
+function getRandomTemperatureRange() {
+  const min = (Math.random() * 20 + 10).toFixed(2); // 10-30
+  const max = (parseFloat(min) + Math.random() * 20).toFixed(2); // min-50
+  return { min, max };
+}
+
+// 生成随机成像状态
+function getRandomImageStatus() {
+  const statuses = ['正常', '异常', '处理中'];
+  return statuses[Math.floor(Math.random() * statuses.length)];
+}
+
+// 生成随机文件大小
+function getRandomFileSize() {
+  return Math.floor(Math.random() * 10000000) + 1000000; // 1MB-11MB
+}
+
+// 插入热成像测试数据
+async function insertThermalImageData() {
   try {
     const connection = await pool.getConnection();
     
@@ -112,24 +151,32 @@ async function insertImageData() {
     const [robots] = await connection.query('SELECT robot_id FROM robots');
     const robotIds = robots.map(robot => robot.robot_id);
     
+    // 获取所有环境ID
+    const [environments] = await connection.query('SELECT environment_id FROM environments');
+    const environmentIds = environments.map(env => env.environment_id);
+    
     for (let i = 1; i <= 20; i++) {
-      const imageId = `IMG_${i.toString().padStart(3, '0')}`;
+      const imageId = `THERMAL_${i.toString().padStart(3, '0')}`;
       const robotId = robotIds[Math.floor(Math.random() * robotIds.length)];
+      const environmentId = environmentIds[Math.floor(Math.random() * environmentIds.length)];
       const captureTime = getRandomDate();
-      const path = `/images/${imageId}.${getRandomImageFormat()}`;
-      const format = getRandomImageFormat();
-      const resolution = getRandomResolution();
+      const path = `/thermal_images/${imageId}.jpg`;
+      const width = getRandomWidth();
+      const height = getRandomHeight();
+      const temperatureRange = getRandomTemperatureRange();
+      const status = getRandomImageStatus();
+      const fileSize = getRandomFileSize();
       
       await connection.query(
-        'INSERT INTO images (image_id, robot_id, capture_time, path, format, resolution) VALUES (?, ?, ?, ?, ?, ?)',
-        [imageId, robotId, captureTime, path, format, resolution]
+        'INSERT INTO thermal_images (image_id, robot_id, environment_id, capture_time, path, width, height, min_temperature, max_temperature, status, file_size) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+        [imageId, robotId, environmentId, captureTime, path, width, height, temperatureRange.min, temperatureRange.max, status, fileSize]
       );
     }
     
     connection.release();
-    console.log('成像测试数据插入完成');
+    console.log('热成像测试数据插入完成');
   } catch (error) {
-    console.error('插入成像数据错误:', error);
+    console.error('插入热成像数据错误:', error);
     throw error;
   }
 }
@@ -139,13 +186,15 @@ async function verifyData() {
   try {
     const connection = await pool.getConnection();
     
+    const [usersCount] = await connection.query('SELECT COUNT(*) as count FROM users');
     const [robotsCount] = await connection.query('SELECT COUNT(*) as count FROM robots');
     const [environmentsCount] = await connection.query('SELECT COUNT(*) as count FROM environments');
-    const [imagesCount] = await connection.query('SELECT COUNT(*) as count FROM images');
+    const [thermalImagesCount] = await connection.query('SELECT COUNT(*) as count FROM thermal_images');
     
+    console.log(`用户表记录数: ${usersCount[0].count}`);
     console.log(`机器人表记录数: ${robotsCount[0].count}`);
     console.log(`环境表记录数: ${environmentsCount[0].count}`);
-    console.log(`成像表记录数: ${imagesCount[0].count}`);
+    console.log(`热成像表记录数: ${thermalImagesCount[0].count}`);
     
     connection.release();
   } catch (error) {
@@ -154,13 +203,85 @@ async function verifyData() {
   }
 }
 
+// 生成随机用户名
+function generateUsername() {
+  return `user${Math.floor(Math.random() * 10000)}`;
+}
+
+// 生成随机邮箱
+function generateEmail() {
+  return `user${Math.floor(Math.random() * 10000)}@example.com`;
+}
+
+// 生成随机密码
+function generatePassword() {
+  return `password${Math.floor(Math.random() * 10000)}`;
+}
+
+// 生成随机用户状态
+function getRandomUserStatus() {
+  const statuses = ['active', 'pending_deletion', 'deleted'];
+  return statuses[Math.floor(Math.random() * statuses.length)];
+}
+
+// 插入用户测试数据
+async function insertUserData() {
+  try {
+    const connection = await pool.getConnection();
+    
+    for (let i = 1; i <= 20; i++) {
+      const username = generateUsername();
+      const email = generateEmail();
+      const password = generatePassword();
+      const status = getRandomUserStatus();
+      const deactivatedAt = status === 'active' ? null : getRandomDate();
+      const deactivationReason = status === 'active' ? null : `Reason ${i}`;
+      
+      await connection.query(
+        'INSERT INTO users (username, email, password, status, deactivated_at, deactivation_reason) VALUES (?, ?, ?, ?, ?, ?)',
+        [username, email, password, status, deactivatedAt, deactivationReason]
+      );
+    }
+    
+    connection.release();
+    console.log('用户测试数据插入完成');
+  } catch (error) {
+    console.error('插入用户数据错误:', error);
+    throw error;
+  }
+}
+
+// 清空所有表
+async function clearTables() {
+  try {
+    const connection = await pool.getConnection();
+    
+    // 先清空热成像表（因为它引用了其他表）
+    await connection.query('DELETE FROM thermal_images');
+    // 再清空机器人表
+    await connection.query('DELETE FROM robots');
+    // 再清空环境表
+    await connection.query('DELETE FROM environments');
+    // 最后清空用户表
+    await connection.query('DELETE FROM users');
+    
+    connection.release();
+    console.log('所有表已清空');
+  } catch (error) {
+    console.error('清空表错误:', error);
+    throw error;
+  }
+}
+
 // 主函数
 async function main() {
   try {
     console.log('开始插入测试数据...');
+    await clearTables();
+    await insertUserData();
     await insertRobotData();
     await insertEnvironmentData();
-    await insertImageData();
+    await insertThermalImageData();
     console.log('测试数据插入完成，开始验证...');
     await verifyData();
     console.log('所有操作完成');
