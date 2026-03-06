@@ -104,6 +104,80 @@ async function initializeDatabase() {
     }
     console.log('用户表已创建或已存在');
     
+    // 检查机器人表是否存在
+    const [robotTables] = await testConnection.query(
+      "SHOW TABLES LIKE 'robots'"
+    );
+    
+    if (robotTables.length === 0) {
+      // 创建机器人表
+      await testConnection.query(`
+        CREATE TABLE robots (
+          id INT AUTO_INCREMENT PRIMARY KEY,
+          robot_id VARCHAR(50) UNIQUE NOT NULL,
+          model VARCHAR(100) NOT NULL,
+          name VARCHAR(100) NOT NULL,
+          status ENUM('online', 'offline', 'maintenance') DEFAULT 'offline',
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+      `);
+      console.log('机器人表已创建');
+    } else {
+      console.log('机器人表已存在');
+    }
+    
+    // 检查环境表是否存在
+    const [environmentTables] = await testConnection.query(
+      "SHOW TABLES LIKE 'environments'"
+    );
+    
+    if (environmentTables.length === 0) {
+      // 创建环境表
+      await testConnection.query(`
+        CREATE TABLE environments (
+          id INT AUTO_INCREMENT PRIMARY KEY,
+          environment_id VARCHAR(50) UNIQUE NOT NULL,
+          name VARCHAR(100) NOT NULL,
+          location VARCHAR(255) NOT NULL,
+          type VARCHAR(50) NOT NULL,
+          temperature DECIMAL(5,2) NULL,
+          humidity DECIMAL(5,2) NULL,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+      `);
+      console.log('环境表已创建');
+    } else {
+      console.log('环境表已存在');
+    }
+    
+    // 检查成像表是否存在
+    const [imageTables] = await testConnection.query(
+      "SHOW TABLES LIKE 'images'"
+    );
+    
+    if (imageTables.length === 0) {
+      // 创建成像表
+      await testConnection.query(`
+        CREATE TABLE images (
+          id INT AUTO_INCREMENT PRIMARY KEY,
+          image_id VARCHAR(50) UNIQUE NOT NULL,
+          robot_id VARCHAR(50) NOT NULL,
+          capture_time TIMESTAMP NOT NULL,
+          path VARCHAR(255) NOT NULL,
+          format VARCHAR(20) NOT NULL,
+          resolution VARCHAR(20) NOT NULL,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+          FOREIGN KEY (robot_id) REFERENCES robots(robot_id) ON DELETE CASCADE
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+      `);
+      console.log('成像表已创建');
+    } else {
+      console.log('成像表已存在');
+    }
+    
     console.log('数据库连接成功');
     testConnection.release();
     
