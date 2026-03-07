@@ -104,78 +104,11 @@ async function initializeDatabase() {
     }
     console.log('用户表已创建或已存在');
     
-    // 首先删除可能存在的热成像表（因为它引用了其他表）
-    await testConnection.query("DROP TABLE IF EXISTS thermal_images");
-    console.log('热成像表已删除（如果存在）');
-    
-    // 检查机器人表是否存在
-    const [robotTables] = await testConnection.query(
-      "SHOW TABLES LIKE 'robots'"
-    );
-    
-    if (robotTables.length > 0) {
-      // 如果表存在，先删除
-      await testConnection.query("DROP TABLE IF EXISTS robots");
-      console.log('旧的机器人表已删除');
-    }
-    
-    // 检查环境表是否存在
-    const [environmentTables] = await testConnection.query(
-      "SHOW TABLES LIKE 'environments'"
-    );
-    
-    if (environmentTables.length > 0) {
-      // 如果表存在，先删除
-      await testConnection.query("DROP TABLE IF EXISTS environments");
-      console.log('旧的环境表已删除');
-    }
-    
-    // 创建机器人表
-    await testConnection.query(`
-      CREATE TABLE robots (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        robot_id VARCHAR(50) UNIQUE NOT NULL,
-        model VARCHAR(100) NOT NULL,
-        name VARCHAR(100) NOT NULL,
-        status ENUM('在线', '离线', '维护中') DEFAULT '离线',
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-        INDEX idx_robot_id (robot_id),
-        INDEX idx_status (status)
-      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-    `);
-    console.log('机器人表已创建');
-    
-    // 创建环境表
-    await testConnection.query(`
-      CREATE TABLE environments (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        environment_id VARCHAR(50) UNIQUE NOT NULL,
-        name VARCHAR(100) NOT NULL UNIQUE,
-        longitude DECIMAL(10,6) NULL,
-        latitude DECIMAL(10,6) NULL,
-        type ENUM('室内', '室外', '工业车间') DEFAULT '室内',
-        temperature DECIMAL(5,2) NULL,
-        humidity DECIMAL(5,2) NULL,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-        INDEX idx_environment_id (environment_id),
-        INDEX idx_name (name),
-        INDEX idx_location (longitude, latitude)
-      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-    `);
-    console.log('环境表已创建');
-    
-
-    
-    // 如果存在旧的images表，删除它
-    const [oldImageTables] = await testConnection.query(
-      "SHOW TABLES LIKE 'images'"
-    );
-    
-    if (oldImageTables.length > 0) {
-      await testConnection.query("DROP TABLE images");
-      console.log('旧的成像表已删除');
+    // 删除所有其他表（如果存在）
+    const tablesToDelete = ['robots', 'environments', 'devices', 'device_data', 'thermal_images', 'images'];
+    for (const table of tablesToDelete) {
+      await testConnection.query(`DROP TABLE IF EXISTS ${table}`);
+      console.log(`表 ${table} 已删除（如果存在）`);
     }
     
     console.log('数据库连接成功');
