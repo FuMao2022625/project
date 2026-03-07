@@ -8,6 +8,7 @@ var cors = require('cors');
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var authRouter = require('./routes/auth');
+var temperatureRouter = require('./routes/temperature');
 
 var { initializeDatabase } = require('./db');
 
@@ -28,6 +29,7 @@ app.use(cors());
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/auth', authRouter);
+app.use('/api', temperatureRouter);
 
 
 // 初始化数据库连接
