@@ -104,12 +104,61 @@ async function initializeDatabase() {
     }
     console.log('用户表已创建或已存在');
     
-    // 删除所有其他表（如果存在）
-    const tablesToDelete = ['robots', 'environments', 'devices', 'device_data', 'thermal_images', 'images'];
+    // 删除所有其他表（如果存在） - 按依赖关系顺序删除
+    const tablesToDelete = ['thermal_images', 'robots', 'environments', 'devices', 'device_data', 'images'];
     for (const table of tablesToDelete) {
       await testConnection.query(`DROP TABLE IF EXISTS ${table}`);
       console.log(`表 ${table} 已删除（如果存在）`);
     }
+    
+    // 创建机器人表
+    await testConnection.query(`
+      CREATE TABLE robots (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        robot_id VARCHAR(50) UNIQUE NOT NULL COMMENT '机器人唯一标识',
+        model VARCHAR(100) NOT NULL COMMENT '机器人型号',
+        status ENUM('online', 'offline', 'maintenance') DEFAULT 'offline' COMMENT '机器人状态',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+        INDEX idx_robot_id (robot_id),
+        INDEX idx_status (status)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+    `);
+    console.log('机器人表创建成功');
+    
+    // 创建环境表
+    await testConnection.query(`
+      CREATE TABLE environments (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        env_id VARCHAR(50) UNIQUE NOT NULL COMMENT '环境编号',
+        location VARCHAR(255) NOT NULL COMMENT '位置信息',
+        temperature DECIMAL(5,2) COMMENT '温度参数',
+        humidity DECIMAL(5,2) COMMENT '湿度参数',
+        pressure DECIMAL(6,2) COMMENT '压力参数',
+        monitored_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '监测时间',
+        INDEX idx_env_id (env_id),
+        INDEX idx_location (location),
+        INDEX idx_monitored_at (monitored_at)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+    `);
+    console.log('环境表创建成功');
+    
+    // 创建热成像表
+    await testConnection.query(`
+      CREATE TABLE thermal_images (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        image_id VARCHAR(50) UNIQUE NOT NULL COMMENT '热成像数据ID',
+        robot_id VARCHAR(50) NOT NULL COMMENT '关联机器人ID',
+        captured_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '成像时间',
+        temperature_data JSON COMMENT '温度数据',
+        image_path VARCHAR(255) NOT NULL COMMENT '图像存储路径',
+        INDEX idx_image_id (image_id),
+        INDEX idx_robot_id (robot_id),
+        INDEX idx_captured_at (captured_at),
+        FOREIGN KEY (robot_id) REFERENCES robots(robot_id) ON DELETE CASCADE ON UPDATE CASCADE
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+    `);
+    console.log('热成像表创建成功');
     
     console.log('数据库连接成功');
     testConnection.release();

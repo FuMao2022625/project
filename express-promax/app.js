@@ -8,6 +8,9 @@ var cors = require('cors');
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var authRouter = require('./routes/auth');
+var temperatureRouter = require('./routes/temperature');
+var thermalRouter = require('./routes/thermal');
+var exportRouter = require('./routes/export');
 
 var { initializeDatabase } = require('./db');
 
@@ -28,6 +31,9 @@ app.use(cors());
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/auth', authRouter);
+app.use('/temperature', temperatureRouter);
+app.use('/thermal', thermalRouter);
+app.use('/export', exportRouter);
 
 
 // 初始化数据库连接

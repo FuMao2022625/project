@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>温度监控</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 20px;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .temperature-display {
+            text-align: center;
+            margin: 30px 0;
+        }
+        .temperature-value {
+            font-size: 48px;
+            font-weight: bold;
+            color: #4CAF50;
+        }
+        .timestamp {
+            color: #666;
+            margin-top: 10px;
+        }
+        .status {
+            text-align: center;
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .status-connected {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .status-disconnected {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        .reconnect-button {
+            margin-top: 10px;
+            padding: 8px 16px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .reconnect-button:hover {
+            background-color: #0069d9;
+        }
+        .log {
+            margin-top: 30px;
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 10px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>温度监控系统</h1>
+        
+        <div class="temperature-display">
+            <div class="temperature-value" id="temperature">--.-</div>
+            <div class="timestamp" id="timestamp">等待数据...</div>
+        </div>
+        
+        <div class="status" id="status">
+            连接状态: <span id="status-text">未连接</span>
+            <button class="reconnect-button" id="reconnect" onclick="connectSSE()">重新连接</button>
+        </div>
+        
+        <div class="log" id="log">
+            <div>日志:</div>
+        </div>
+    </div>
+
+    <script>
+        let eventSource;
+        let reconnectAttempts = 0;
+        const maxReconnectAttempts = 5;
+        const reconnectDelay = 3000; // 3秒
+
+        function log(message) {
+            const logElement = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.textContent = `[${timestamp}] ${message}`;
+            logElement.appendChild(logEntry);
+            logElement.scrollTop = logElement.scrollHeight;
+        }
+
+        function updateStatus(connected) {
+            const statusElement = document.getElementById('status');
+            const statusTextElement = document.getElementById('status-text');
+            
+            if (connected) {
+                statusElement.className = 'status status-connected';
+                statusTextElement.textContent = '已连接';
+                reconnectAttempts = 0;
+            } else {
+                statusElement.className = 'status status-disconnected';
+                statusTextElement.textContent = '已断开';
+            }
+        }
+
+        function updateTemperature(data) {
+            const temperatureElement = document.getElementById('temperature');
+            const timestampElement = document.getElementById('timestamp');
+            
+            temperatureElement.textContent = `${data.temperature} °C`;
+            timestampElement.textContent = new Date(data.timestamp).toLocaleString();
+        }
+
+        function connectSSE() {
+            log('尝试连接SSE...');
+            
+            if (eventSource) {
+                eventSource.close();
+            }
+
+            try {
+                eventSource = new EventSource('/temperature/stream');
+                
+                eventSource.addEventListener('temperature', function(event) {
+                    const data = JSON.parse(event.data);
+                    updateTemperature(data);
+                    log(`收到温度数据: ${data.temperature} °C`);
+                });
+                
+                eventSource.addEventListener('heartbeat', function(event) {
+                    log('收到心跳信号');
+                });
+                
+                eventSource.addEventListener('open', function() {
+                    log('SSE连接已建立');
+                    updateStatus(true);
+                });
+                
+                eventSource.addEventListener('error', function(error) {
+                    log(`SSE错误: ${error.type}`);
+                    updateStatus(false);
+                    
+                    if (error.readyState === EventSource.CLOSED) {
+                        if (reconnectAttempts < maxReconnectAttempts) {
+                            reconnectAttempts++;
+                            log(`尝试重连 (${reconnectAttempts}/${maxReconnectAttempts})...`);
+                            setTimeout(connectSSE, reconnectDelay);
+                        } else {
+                            log('达到最大重连次数，停止尝试');
+                        }
+                    }
+                });
+            } catch (error) {
+                log(`连接SSE失败: ${error.message}`);
+                updateStatus(false);
+                
+                if (reconnectAttempts < maxReconnectAttempts) {
+                    reconnectAttempts++;
+                    log(`尝试重连 (${reconnectAttempts}/${maxReconnectAttempts})...`);
+                    setTimeout(connectSSE, reconnectDelay);
+                }
+            }
+        }
+
+        // 初始化连接
+        window.onload = function() {
+            connectSSE();
+        };
+
+        // 页面关闭时清理连接
+        window.onbeforeunload = function() {
+            if (eventSource) {
+                eventSource.close();
+            }
+        };
+    </script>
+</body>
+</html>
