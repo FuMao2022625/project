@@ -7,6 +7,7 @@
 var app = require('../app');
 var debug = require('debug')('express:server');
 var http = require('http');
+var socketIO = require('socket.io');
 
 /**
  * 从环境变量获取端口并存储在Express中
@@ -20,6 +21,40 @@ app.set('port', port);
  */
 
 var server = http.createServer(app);
+var io = socketIO(server);
+
+// 处理Socket.io连接
+io.on('connection', (socket) => {
+  console.log('新的客户端连接:', socket.id);
+  
+  // 处理加入房间
+  socket.on('join', (room) => {
+    socket.join(room);
+    console.log(`${socket.id} 加入房间: ${room}`);
+  });
+  
+  // 处理离开房间
+  socket.on('leave', (room) => {
+    socket.leave(room);
+    console.log(`${socket.id} 离开房间: ${room}`);
+  });
+  
+  // 处理信令数据
+  socket.on('signal', (data) => {
+    console.log('接收到信令数据:', data);
+    // 将信令转发给指定的接收者
+    if (data.to) {
+      socket.to(data.to).emit('signal', data);
+    } else if (data.room) {
+      socket.to(data.room).emit('signal', data);
+    }
+  });
+  
+  // 处理断开连接
+  socket.on('disconnect', () => {
+    console.log('客户端断开连接:', socket.id);
+  });
+});
 
 /**
  * 监听提供的端口，在所有网络接口上

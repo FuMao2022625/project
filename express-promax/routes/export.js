@@ -1,27 +1,54 @@
+/**
+ * 数据导出路由模块
+ * 功能：提供数据导出为CSV和Excel格式的功能
+ * 作者：系统生成
+ * 创建日期：2024-01-01
+ * 主要修改记录：
+ * 2024-01-01 - 初始化文件
+ */
+
+// 导入依赖模块
 var express = require('express');
 var router = express.Router();
-const { pool } = require('../db');
-const createCsvWriter = require('csv-writer').createObjectCsvWriter;
-const XLSX = require('xlsx');
-const fs = require('fs');
-const path = require('path');
+const { pool } = require('../db'); // 数据库连接池
+const createCsvWriter = require('csv-writer').createObjectCsvWriter; // CSV写入器
+const XLSX = require('xlsx'); // Excel处理库
+const fs = require('fs'); // 文件系统
+const path = require('path'); // 路径处理
 
-// 支持的表列表
+/**
+ * 支持的表列表
+ * 可导出的数据表
+ */
 const SUPPORTED_TABLES = ['users', 'robots', 'environments', 'thermal_images'];
 
-// 生成唯一文件名
+/**
+ * 生成唯一文件名
+ * 功能：根据表名和格式生成带有时间戳的唯一文件名
+ * @param {string} table - 表名
+ * @param {string} format - 文件格式（csv或xlsx）
+ * @returns {string} - 生成的唯一文件名
+ */
 function generateFileName(table, format) {
   const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
   return `${table}_${timestamp}.${format}`;
 }
 
-// 导出为CSV格式
+/**
+ * 导出为CSV格式
+ * 功能：将指定表的数据导出为CSV文件
+ * @param {string} table - 表名
+ * @param {object} filters - 过滤条件（可选）
+ * @returns {Promise<object>} - 导出结果，包含文件名、文件路径和记录数
+ * @throws {Error} - 导出失败时抛出错误
+ */
 async function exportToCSV(table, filters = {}) {
   try {
     // 构建查询语句
     let query = `SELECT * FROM ${table}`;
     let params = [];
     
+    // 添加过滤条件
     if (Object.keys(filters).length > 0) {
       query += ' WHERE';
       const conditions = [];
@@ -85,13 +112,21 @@ async function exportToCSV(table, filters = {}) {
   }
 }
 
-// 导出为Excel格式
+/**
+ * 导出为Excel格式
+ * 功能：将指定表的数据导出为Excel文件
+ * @param {string} table - 表名
+ * @param {object} filters - 过滤条件（可选）
+ * @returns {Promise<object>} - 导出结果，包含文件名、文件路径和记录数
+ * @throws {Error} - 导出失败时抛出错误
+ */
 async function exportToExcel(table, filters = {}) {
   try {
     // 构建查询语句
     let query = `SELECT * FROM ${table}`;
     let params = [];
     
+    // 添加过滤条件
     if (Object.keys(filters).length > 0) {
       query += ' WHERE';
       const conditions = [];
@@ -151,7 +186,17 @@ async function exportToExcel(table, filters = {}) {
   }
 }
 
-// 导出API路由
+/**
+ * 导出API路由
+ * @route POST /export/data
+ * @description 导出数据为CSV或Excel格式
+ * @param {string} table - 表名
+ * @param {string} format - 导出格式（csv或xlsx）
+ * @param {object} filters - 过滤条件（可选）
+ * @returns {object} 200 - 导出成功，返回文件信息
+ * @returns {object} 400 - 参数错误
+ * @returns {object} 500 - 导出失败
+ */
 router.post('/data', async function(req, res, next) {
   try {
     const { table, format, filters } = req.body;
@@ -196,7 +241,12 @@ router.post('/data', async function(req, res, next) {
   }
 });
 
-// 获取支持的表列表
+/**
+ * 获取支持的表列表
+ * @route GET /export/tables
+ * @description 获取可导出的表列表
+ * @returns {object} 200 - 返回支持的表列表
+ */
 router.get('/tables', function(req, res, next) {
   res.json({
     success: true,
@@ -204,4 +254,5 @@ router.get('/tables', function(req, res, next) {
   });
 });
 
+// 导出路由模块
 module.exports = router;

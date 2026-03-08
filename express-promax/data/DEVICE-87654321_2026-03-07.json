@@ -1,0 +1,13 @@
+[
+  {
+    "deviceId": "DEVICE-87654321",
+    "timestamp": "2026-03-07T13:18:40.522Z",
+    "dataType": "sensor",
+    "data": {
+      "temperature": "22.74",
+      "humidity": "51.39",
+      "pressure": "1043.99"
+    },
+    "receivedAt": "2026-03-07T13:18:40.525Z"
+  }
+]

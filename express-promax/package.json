@@ -18,7 +18,9 @@
     "jsonwebtoken": "^9.0.3",
     "morgan": "~1.9.1",
     "mysql2": "^3.18.2",
+    "peer": "^1.0.2",
     "pug": "^3.0.3",
+    "socket.io": "^4.8.3",
     "xlsx": "^0.18.5"
   },
   "devDependencies": {

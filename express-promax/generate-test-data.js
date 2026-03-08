@@ -155,6 +155,40 @@ async function generateEnvironmentsData() {
   }
 }
 
+// 生成设备测试数据
+async function generateDevicesData() {
+  const connection = await pool.getConnection();
+  try {
+    console.log('开始生成设备测试数据...');
+    
+    // 清空现有数据
+    await connection.query('DELETE FROM devices');
+    
+    // 生成50条设备数据
+    const devices = [];
+    for (let i = 1; i <= 50; i++) {
+      const deviceId = `DEVICE-${generateRandomString(8)}`;
+      const name = `设备${i}`;
+      const type = ['sensor', 'actuator', 'controller'][Math.floor(Math.random() * 3)];
+      const status = ['online', 'offline', 'error'][Math.floor(Math.random() * 3)];
+      
+      devices.push([deviceId, name, type, status]);
+    }
+    
+    // 批量插入
+    await connection.query(
+      'INSERT INTO devices (device_id, name, type, status) VALUES ?',
+      [devices]
+    );
+    
+    console.log('设备测试数据生成完成');
+  } catch (error) {
+    console.error('生成设备数据时出错:', error);
+  } finally {
+    connection.release();
+  }
+}
+
 // 生成热成像测试数据
 async function generateThermalImagesData() {
   const connection = await pool.getConnection();
@@ -205,7 +239,7 @@ async function verifyData() {
   try {
     console.log('开始验证数据...');
     
-    const tables = ['users', 'robots', 'environments', 'thermal_images'];
+    const tables = ['users', 'robots', 'environments', 'devices', 'thermal_images'];
     for (const table of tables) {
       const [result] = await connection.query(`SELECT COUNT(*) as count FROM ${table}`);
       console.log(`${table}表记录数: ${result[0].count}`);
@@ -229,6 +263,7 @@ async function main() {
     await generateUsersData();
     await generateRobotsData();
     await generateEnvironmentsData();
+    await generateDevicesData();
     await generateThermalImagesData();
     
     // 验证数据

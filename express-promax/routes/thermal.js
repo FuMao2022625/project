@@ -1,8 +1,22 @@
+/**
+ * 热成像数据路由模块
+ * 功能：提供热成像数据的SSE流和历史数据查询
+ * 作者：系统生成
+ * 创建日期：2024-01-01
+ * 主要修改记录：
+ * 2024-01-01 - 初始化文件
+ */
+
+// 导入依赖模块
 var express = require('express');
 var router = express.Router();
-const { pool } = require('../db');
+const { pool } = require('../db'); // 数据库连接池
 
-// 模拟热成像数据生成函数
+/**
+ * 模拟热成像数据生成函数
+ * 功能：生成20x20的热成像数据
+ * @returns {Array} - 热成像数据数组，包含x、y坐标和温度值
+ */
 function generateThermalData() {
   const data = [];
   // 生成20x20的热成像数据
@@ -16,7 +30,12 @@ function generateThermalData() {
   return data;
 }
 
-// 压缩数据的简单实现
+/**
+ * 压缩数据的简单实现
+ * 功能：将数据压缩为JSON字符串
+ * @param {any} data - 要压缩的数据
+ * @returns {string|null} - 压缩后的数据，失败时返回null
+ */
 function compressData(data) {
   try {
     // 这里使用JSON.stringify作为基础压缩，实际项目中可以使用更高效的压缩算法
@@ -27,12 +46,17 @@ function compressData(data) {
   }
 }
 
-// SSE路由 - 实时推送热成像数据
+/**
+ * SSE热成像数据流路由
+ * @route GET /thermal/stream
+ * @description 提供实时热成像数据的SSE流
+ * @returns {EventStream} - SSE流，包含thermal_data和heartbeat事件
+ */
 router.get('/stream', async function(req, res, next) {
   // 设置SSE响应头
-  res.setHeader('Content-Type', 'text/event-stream');
-  res.setHeader('Cache-Control', 'no-cache');
-  res.setHeader('Connection', 'keep-alive');
+  res.setHeader('Content-Type', 'text/event-stream'); // SSE内容类型
+  res.setHeader('Cache-Control', 'no-cache'); // 禁用缓存
+  res.setHeader('Connection', 'keep-alive'); // 保持连接
   res.setHeader('X-Accel-Buffering', 'no'); // 禁用Nginx缓冲
   
   // 连接状态
@@ -113,7 +137,14 @@ router.get('/stream', async function(req, res, next) {
   });
 });
 
-// 获取热成像历史数据的API
+/**
+ * 获取热成像历史数据
+ * @route GET /thermal/history
+ * @description 获取热成像历史数据
+ * @param {number} limit - 限制返回数量（默认10）
+ * @returns {object} 200 - 返回热成像历史数据
+ * @returns {object} 500 - 获取失败
+ */
 router.get('/history', async function(req, res, next) {
   try {
     const limit = parseInt(req.query.limit) || 10;
@@ -135,4 +166,5 @@ router.get('/history', async function(req, res, next) {
   }
 });
 
+// 导出路由模块
 module.exports = router;

@@ -1,22 +1,42 @@
+/**
+ * 数据库连接与初始化模块
+ * 功能：创建数据库连接池，初始化数据库结构，处理数据库错误
+ * 作者：系统生成
+ * 创建日期：2024-01-01
+ * 主要修改记录：
+ * 2024-01-01 - 初始化文件
+ * 2026-03-07 - 添加设备表和设备数据表支持
+ */
+
+// 导入mysql2模块
 const mysql = require('mysql2/promise');
 
+/**
+ * MySQL连接池配置
+ * 用于管理数据库连接，提高性能和可靠性
+ */
 const pool = mysql.createPool({
-  host: process.env.DB_HOST || 'localhost',
-  port: process.env.DB_PORT || 3306,
-  user: process.env.DB_USER || 'root',
-  password: process.env.DB_PASSWORD || '12305',
-  database: process.env.DB_NAME || 'express_pro',
-  charset: 'utf8mb4',
-  waitForConnections: true,
-  connectionLimit: 20, // 增加连接池大小以支持更多并发请求
-  queueLimit: 0,
+  host: process.env.DB_HOST || 'localhost', // 数据库主机地址
+  port: process.env.DB_PORT || 3306, // 数据库端口
+  user: process.env.DB_USER || 'root', // 数据库用户名
+  password: process.env.DB_PASSWORD || '12305', // 数据库密码
+  database: process.env.DB_NAME || 'express_pro', // 数据库名称
+  charset: 'utf8mb4', // 字符集
+  waitForConnections: true, // 等待连接
+  connectionLimit: 20, // 连接池大小
+  queueLimit: 0, // 队列限制
   enableKeepAlive: true, // 启用连接保活
   keepAliveInitialDelay: 30000, // 30秒后开始保活
   connectTimeout: 10000, // 连接超时时间
   acquireTimeout: 10000 // 获取连接超时时间
 });
 
-// 测试连接并在数据库不存在时创建
+/**
+ * 初始化数据库
+ * 功能：检查数据库是否存在，创建数据库，创建表结构
+ * @returns {Promise<void>} - 初始化完成的Promise
+ * @throws {Error} - 数据库初始化失败时抛出错误
+ */
 async function initializeDatabase() {
   let connection;
   try {
@@ -105,11 +125,27 @@ async function initializeDatabase() {
     console.log('用户表已创建或已存在');
     
     // 删除所有其他表（如果存在） - 按依赖关系顺序删除
-    const tablesToDelete = ['thermal_images', 'robots', 'environments', 'devices', 'device_data', 'images'];
+    const tablesToDelete = ['thermal_images', 'device_data', 'robots', 'environments', 'devices', 'images'];
     for (const table of tablesToDelete) {
       await testConnection.query(`DROP TABLE IF EXISTS ${table}`);
       console.log(`表 ${table} 已删除（如果存在）`);
     }
+    
+    // 创建设备表
+    await testConnection.query(`
+      CREATE TABLE devices (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        device_id VARCHAR(50) UNIQUE NOT NULL COMMENT '设备唯一标识',
+        name VARCHAR(100) NOT NULL COMMENT '设备名称',
+        type VARCHAR(50) NOT NULL COMMENT '设备类型',
+        status ENUM('online', 'offline', 'error') DEFAULT 'offline' COMMENT '设备状态',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+        INDEX idx_device_id (device_id),
+        INDEX idx_status (status)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+    `);
+    console.log('设备表创建成功');
     
     // 创建机器人表
     await testConnection.query(`
@@ -160,6 +196,23 @@ async function initializeDatabase() {
     `);
     console.log('热成像表创建成功');
     
+    // 创建设备数据表
+    await testConnection.query(`
+      CREATE TABLE device_data (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        device_id VARCHAR(50) NOT NULL COMMENT '设备唯一标识',
+        timestamp TIMESTAMP NOT NULL COMMENT '数据时间戳',
+        data_type VARCHAR(50) NOT NULL COMMENT '数据类型',
+        data JSON COMMENT '数据内容',
+        received_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '接收时间',
+        INDEX idx_device_id (device_id),
+        INDEX idx_timestamp (timestamp),
+        INDEX idx_data_type (data_type),
+        FOREIGN KEY (device_id) REFERENCES devices(device_id) ON DELETE CASCADE ON UPDATE CASCADE
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+    `);
+    console.log('设备数据表创建成功');
+    
     console.log('数据库连接成功');
     testConnection.release();
     
@@ -173,7 +226,11 @@ async function initializeDatabase() {
   }
 }
 
-// 连接池错误处理
+/**
+ * 连接池错误处理
+ * 功能：捕获并处理MySQL连接池错误
+ * @param {Error} err - 错误对象
+ */
 pool.on('error', (err) => {
   console.error('MySQL连接池错误:', err);
 });
@@ -191,7 +248,8 @@ if (require.main === module) {
     });
 }
 
-module.exports = {
-  pool,
-  initializeDatabase // 导出初始化函数
+// 导出模块
+exports = module.exports = {
+  pool, // 数据库连接池
+  initializeDatabase // 数据库初始化函数
 };
