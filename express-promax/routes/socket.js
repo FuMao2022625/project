@@ -204,11 +204,22 @@ async function processDataLine(clientId, line) {
 async function processDeviceData(deviceId, timestamp, dataType, data) {
   try {
     // 数据格式转换和预处理
+    let parsedData;
+    
+    // 验证并解析JSON数据
+    try {
+      parsedData = JSON.parse(data);
+    } catch (jsonError) {
+      console.error(`设备 ${deviceId} 数据格式错误: ${data.substring(0, 50)}...`);
+      logError(`设备 ${deviceId} 数据格式错误: ${data.substring(0, 100)}...`);
+      return; // 跳过无效数据
+    }
+    
     const processedData = {
       deviceId,
       timestamp: new Date(timestamp),
       dataType,
-      data: JSON.parse(data),
+      data: parsedData,
       receivedAt: new Date()
     };
     

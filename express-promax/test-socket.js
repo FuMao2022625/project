@@ -1,59 +1,47 @@
 const net = require('net');
 
-// Socket服务器配置
-const SOCKET_CONFIG = {
-  host: 'localhost',
-  port: 8080
-};
+// Create a socket client
+const client = new net.Socket();
 
-// 创建设备客户端
-function createDeviceClient(deviceId) {
-  const client = net.createConnection(SOCKET_CONFIG, () => {
-    console.log(`设备 ${deviceId} 已连接到服务器`);
-    
-    // 发送设备数据
-    setInterval(() => {
-      const data = {
-        temperature: (20 + Math.random() * 10).toFixed(2),
-        humidity: (40 + Math.random() * 30).toFixed(2),
-        pressure: (1000 + Math.random() * 50).toFixed(2)
-      };
-      
-      const dataFrame = `${deviceId},${new Date().toISOString()},sensor,${JSON.stringify(data)}\n`;
-      client.write(dataFrame);
-      console.log(`设备 ${deviceId} 发送数据: ${dataFrame.trim()}`);
-    }, 2000);
-  });
+// Connect to the socket server
+client.connect(8080, 'localhost', () => {
+  console.log('Connected to socket server');
   
-  // 处理服务器响应
-  client.on('data', (data) => {
-    console.log(`设备 ${deviceId} 收到服务器响应: ${data.toString()}`);
-  });
+  // Send invalid JSON data (simulating the error from the logs)
+  const invalidData1 = 'device1,2026-03-08T12:00:00,data,image/avif';
+  const invalidData2 = 'device1,2026-03-08T12:00:01,data, zstd';
+  const validData = 'device1,2026-03-08T12:00:02,data,{"temperature": 25, "humidity": 60}';
   
-  // 处理连接错误
-  client.on('error', (error) => {
-    console.error(`设备 ${deviceId} 连接错误:`, error);
-  });
+  console.log('Sending invalid JSON data 1...');
+  client.write(invalidData1 + '\n');
   
-  // 处理连接关闭
-  client.on('close', () => {
-    console.log(`设备 ${deviceId} 连接已关闭`);
-  });
+  setTimeout(() => {
+    console.log('Sending invalid JSON data 2...');
+    client.write(invalidData2 + '\n');
+  }, 1000);
   
-  return client;
-}
-
-// 创建多个设备客户端
-const devices = [
-  'DEVICE-12345678',
-  'DEVICE-87654321',
-  'DEVICE-ABCDEFGH'
-];
-
-devices.forEach(deviceId => {
-  createDeviceClient(deviceId);
+  setTimeout(() => {
+    console.log('Sending valid JSON data...');
+    client.write(validData + '\n');
+  }, 2000);
+  
+  setTimeout(() => {
+    console.log('Closing connection...');
+    client.end();
+  }, 3000);
 });
 
-console.log('Socket测试客户端已启动');
-console.log(`连接到 ${SOCKET_CONFIG.host}:${SOCKET_CONFIG.port}`);
-console.log('按 Ctrl+C 退出');
+// Handle data received from server
+client.on('data', (data) => {
+  console.log('Received from server:', data.toString());
+});
+
+// Handle connection close
+client.on('close', () => {
+  console.log('Connection closed');
+});
+
+// Handle errors
+client.on('error', (error) => {
+  console.error('Error:', error);
+});
