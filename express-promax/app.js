@@ -22,7 +22,6 @@ var temperatureRouter = require('./routes/temperature'); // 温度数据路由
 var thermalRouter = require('./routes/thermal'); // 热成像数据路由
 var exportRouter = require('./routes/export'); // 数据导出路由
 var videoRouter = require('./routes/video'); // 视频流路由
-var socketRouter = require('./routes/socket'); // Socket通信路由
 
 // 导入数据库初始化函数
 var { initializeDatabase } = require('./db');
@@ -48,7 +47,6 @@ app.use('/temperature', temperatureRouter); // 温度数据路由
 app.use('/thermal', thermalRouter); // 热成像数据路由
 app.use('/export', exportRouter); // 数据导出路由
 app.use('/video', videoRouter); // 视频流路由
-app.use('/socket', socketRouter); // Socket通信路由
 
 // 初始化数据库连接
 initializeDatabase()

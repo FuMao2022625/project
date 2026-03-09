@@ -163,14 +163,9 @@
         </div>
     </div>
 
-    <script src="/socket.io/socket.io.js"></script>
     <script>
-        let socket;
         let localStream;
-        let peerConnection;
-        let roomId = 'room1';
         let videoQuality = 'medium';
-        let latencyTimer;
         let frameCount = 0;
         let lastFrameTime = Date.now();
         
@@ -180,98 +175,6 @@
             medium: { width: 640, height: 480, frameRate: 30 },
             high: { width: 1280, height: 720, frameRate: 30 }
         };
-        
-        // 初始化Socket连接
-        function initSocket() {
-            socket = io();
-            
-            socket.on('connect', () => {
-                console.log('Socket连接成功:', socket.id);
-                updateStatus('已连接', true);
-                document.getElementById('connectionStatus').textContent = '已连接';
-            });
-            
-            socket.on('disconnect', () => {
-                console.log('Socket连接断开');
-                updateStatus('已断开', false);
-                document.getElementById('connectionStatus').textContent = '已断开';
-            });
-            
-            socket.on('signal', (data) => {
-                console.log('接收到信令:', data);
-                handleSignal(data);
-            });
-        }
-        
-        // 处理信令
-        async function handleSignal(data) {
-            if (!peerConnection) {
-                await createPeerConnection();
-            }
-            
-            if (data.type === 'offer') {
-                await peerConnection.setRemoteDescription(new RTCSessionDescription(data));
-                const answer = await peerConnection.createAnswer();
-                await peerConnection.setLocalDescription(answer);
-                socket.emit('signal', {
-                    type: 'answer',
-                    sdp: answer.sdp,
-                    to: data.from,
-                    room: roomId
-                });
-            } else if (data.type === 'answer') {
-                await peerConnection.setRemoteDescription(new RTCSessionDescription(data));
-            } else if (data.type === 'candidate') {
-                await peerConnection.addIceCandidate(new RTCIceCandidate(data.candidate));
-            }
-        }
-        
-        // 创建对等连接
-        async function createPeerConnection() {
-            const configuration = {
-                iceServers: [
-                    { urls: 'stun:stun.l.google.com:19302' },
-                    { urls: 'stun:stun1.l.google.com:19302' }
-                ]
-            };
-            
-            peerConnection = new RTCPeerConnection(configuration);
-            
-            // 添加本地流
-            if (localStream) {
-                localStream.getTracks().forEach(track => {
-                    peerConnection.addTrack(track, localStream);
-                });
-            }
-            
-            // 处理远程流
-            peerConnection.ontrack = (event) => {
-                const remoteVideo = document.getElementById('remoteVideo');
-                if (!remoteVideo.srcObject) {
-                    remoteVideo.srcObject = event.streams[0];
-                }
-            };
-            
-            // 处理ICE候选
-            peerConnection.onicecandidate = (event) => {
-                if (event.candidate) {
-                    socket.emit('signal', {
-                        type: 'candidate',
-                        candidate: event.candidate,
-                        room: roomId,
-                        from: socket.id
-                    });
-                }
-            };
-            
-            // 处理连接状态变化
-            peerConnection.onconnectionstatechange = () => {
-                console.log('连接状态:', peerConnection.connectionState);
-                if (peerConnection.connectionState === 'connected') {
-                    startLatencyCheck();
-                }
-            };
-        }
         
         // 开始视频流
         async function startStream() {
@@ -300,8 +203,9 @@
                 document.getElementById('stopBtn').disabled = false;
                 document.getElementById('switchBtn').disabled = false;
                 
-                // 加入房间
-                await joinRoom();
+                // 更新状态
+                updateStatus('本地视频已启动', true);
+                document.getElementById('connectionStatus').textContent = '本地模式';
                 
             } catch (error) {
                 console.error('获取摄像头失败:', error);
@@ -316,11 +220,6 @@
                 localStream = null;
             }
             
-            if (peerConnection) {
-                peerConnection.close();
-                peerConnection = null;
-            }
-            
             document.getElementById('localVideo').srcObject = null;
             document.getElementById('remoteVideo').srcObject = null;
             
@@ -330,8 +229,11 @@
             document.getElementById('switchBtn').disabled = true;
             
             // 停止统计
-            stopLatencyCheck();
             stopFrameRateCalculation();
+            
+            // 更新状态
+            updateStatus('视频已停止', false);
+            document.getElementById('connectionStatus').textContent = '未连接';
         }
         
         // 切换摄像头
@@ -351,14 +253,6 @@
                 const localVideo = document.getElementById('localVideo');
                 localVideo.srcObject = newStream;
                 
-                // 替换轨道
-                if (peerConnection) {
-                    const sender = peerConnection.getSenders().find(s => s.track.kind === 'video');
-                    if (sender) {
-                        sender.replaceTrack(newStream.getVideoTracks()[0]);
-                    }
-                }
-                
                 // 停止旧流
                 localStream.getTracks().forEach(track => track.stop());
                 localStream = newStream;
@@ -369,29 +263,6 @@
             }
         }
         
-        // 加入房间
-        function joinRoom() {
-            roomId = document.getElementById('roomId').value || 'room1';
-            socket.emit('join', roomId);
-            
-            // 创建对等连接并发送offer
-            setTimeout(async () => {
-                if (!peerConnection) {
-                    await createPeerConnection();
-                }
-                
-                const offer = await peerConnection.createOffer();
-                await peerConnection.setLocalDescription(offer);
-                
-                socket.emit('signal', {
-                    type: 'offer',
-                    sdp: offer.sdp,
-                    room: roomId,
-                    from: socket.id
-                });
-            }, 1000);
-        }
-        
         // 更新视频质量
         function updateVideoQuality() {
             videoQuality = document.getElementById('videoQuality').value;
@@ -400,27 +271,6 @@
             if (localStream) {
                 stopStream();
                 setTimeout(startStream, 1000);
-            }
-        }
-        
-        // 开始延迟检查
-        function startLatencyCheck() {
-            latencyTimer = setInterval(() => {
-                const startTime = Date.now();
-                socket.emit('ping', startTime);
-                
-                socket.once('pong', (timestamp) => {
-                    const latency = Date.now() - timestamp;
-                    document.getElementById('latency').textContent = `${latency} ms`;
-                });
-            }, 2000);
-        }
-        
-        // 停止延迟检查
-        function stopLatencyCheck() {
-            if (latencyTimer) {
-                clearInterval(latencyTimer);
-                latencyTimer = null;
             }
         }
         
@@ -471,15 +321,13 @@
         
         // 初始化
         window.onload = function() {
-            initSocket();
+            updateStatus('未启动', false);
+            document.getElementById('connectionStatus').textContent = '未连接';
         };
         
         // 页面关闭时清理
         window.onbeforeunload = function() {
             stopStream();
-            if (socket) {
-                socket.disconnect();
-            }
         };
     </script>
 </body>
