@@ -6,28 +6,30 @@
  * 主要修改记录：
  * 2024-01-01 - 初始化文件
  * 2026-03-07 - 添加Socket路由支持
+ * 2026-03-09 - 代码重构和优化
  */
 
 // 导入依赖模块
-var createError = require('http-errors'); // HTTP错误处理
-var express = require('express'); // Express框架
-var path = require('path'); // 路径处理
-var cookieParser = require('cookie-parser'); // Cookie解析
-var logger = require('morgan'); // 日志记录
-var cors = require('cors'); // 跨域支持
+const createError = require('http-errors'); // HTTP错误处理
+const express = require('express'); // Express框架
+const path = require('path'); // 路径处理
+const cookieParser = require('cookie-parser'); // Cookie解析
+const logger = require('morgan'); // 日志记录
+const cors = require('cors'); // 跨域支持
+const helmet = require('helmet'); // 安全中间件
 
 // 导入路由模块
-var authRouter = require('./routes/auth'); // 认证路由
-var temperatureRouter = require('./routes/temperature'); // 温度数据路由
-var thermalRouter = require('./routes/thermal'); // 热成像数据路由
-var exportRouter = require('./routes/export'); // 数据导出路由
-var videoRouter = require('./routes/video'); // 视频流路由
+const authRouter = require('./routes/auth'); // 认证路由
+const temperatureRouter = require('./routes/temperature'); // 温度数据路由
+const thermalRouter = require('./routes/thermal'); // 热成像数据路由
+const exportRouter = require('./routes/export'); // 数据导出路由
+const videoRouter = require('./routes/video'); // 视频流路由
 
 // 导入数据库初始化函数
-var { initializeDatabase } = require('./db');
+const { initializeDatabase } = require('./db');
 
 // 创建Express应用实例
-var app = express();
+const app = express();
 
 // 视图引擎设置
 app.set('views', path.join(__dirname, 'views')); // 设置视图目录
@@ -35,6 +37,7 @@ app.set('view engine', 'pug'); // 设置视图引擎为Pug
 
 // 中间件配置
 app.use(logger('dev')); // 开发环境日志
+app.use(helmet()); // 安全中间件，设置HTTP安全头部
 app.use(express.json()); // 解析JSON请求体
 app.use(express.urlencoded({ extended: false })); // 解析URL编码的请求体
 app.use(cookieParser()); // 解析Cookie
@@ -48,41 +51,62 @@ app.use('/thermal', thermalRouter); // 热成像数据路由
 app.use('/export', exportRouter); // 数据导出路由
 app.use('/video', videoRouter); // 视频流路由
 
-// 初始化数据库连接
-initializeDatabase()
-  .then(() => {
+/**
+ * 404错误处理中间件
+ * 功能：捕获404错误并转发到错误处理器
+ */
+const notFoundHandler = (req, res, next) => {
+  next(createError(404));
+};
+
+/**
+ * 错误处理中间件
+ * 功能：处理应用中的所有错误
+ * @param {Error} err - 错误对象
+ * @param {Request} req - Express请求对象
+ * @param {Response} res - Express响应对象
+ * @param {Function} next - 下一个中间件函数
+ */
+const errorHandler = (err, req, res, next) => {
+  // 设置本地变量，仅在开发环境中提供错误信息
+  res.locals.message = err.message;
+  res.locals.error = req.app.get('env') === 'development' ? err : {};
+
+  // 检查是否为API请求（Accept: application/json）
+  if (req.headers.accept && req.headers.accept.includes('application/json')) {
+    // 返回JSON格式错误响应
+    return res.status(err.status || 500).json({
+      success: false,
+      error: err.message || '服务器内部错误',
+      stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+    });
+  }
+
+  // 渲染错误页面
+  res.status(err.status || 500);
+  res.render('error');
+};
+
+/**
+ * 初始化应用
+ * 功能：初始化数据库连接并启动应用
+ */
+const initializeApp = async () => {
+  try {
+    await initializeDatabase();
     console.log('数据库初始化完成');
     
-    // 捕获404错误并转发到错误处理器
-    app.use(function(req, res, next) {
-      next(createError(404));
-    });
-    
-    // 错误处理器
-    app.use(function(err, req, res, next) {
-      // 设置本地变量，仅在开发环境中提供错误信息
-      res.locals.message = err.message;
-      res.locals.error = req.app.get('env') === 'development' ? err : {};
+    // 注册错误处理中间件
+    app.use(notFoundHandler);
+    app.use(errorHandler);
+  } catch (err) {
+    console.error('初始化应用失败:', err);
+    process.exit(1); // 初始化失败，退出进程
+  }
+};
 
-      // 检查是否为API请求（Accept: application/json）
-      if (req.headers.accept && req.headers.accept.includes('application/json')) {
-        // 返回JSON格式错误响应
-        return res.status(err.status || 500).json({
-          success: false,
-          error: err.message || '服务器内部错误',
-          stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
-        });
-      }
-
-      // 渲染错误页面
-      res.status(err.status || 500);
-      res.render('error');
-    });
-  })
-  .catch(err => {
-    console.error('初始化数据库失败:', err);
-    process.exit(1); // 数据库初始化失败，退出进程
-  });
+// 初始化应用
+initializeApp();
 
 // 导出应用实例
 module.exports = app;

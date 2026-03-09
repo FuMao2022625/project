@@ -5,11 +5,12 @@
  * 创建日期：2024-01-01
  * 主要修改记录：
  * 2024-01-01 - 初始化文件
+ * 2026-03-09 - 性能优化和代码重构
  */
 
 // 导入依赖模块
-var express = require('express');
-var router = express.Router();
+const express = require('express');
+const router = express.Router();
 const { pool } = require('../db'); // 数据库连接池
 const createCsvWriter = require('csv-writer').createObjectCsvWriter; // CSV写入器
 const XLSX = require('xlsx'); // Excel处理库
@@ -21,6 +22,14 @@ const path = require('path'); // 路径处理
  * 可导出的数据表
  */
 const SUPPORTED_TABLES = ['users', 'robots', 'environments', 'thermal_images'];
+
+// 导出目录路径
+const EXPORT_DIR = path.join(__dirname, '../public/exports');
+
+// 确保导出目录存在
+if (!fs.existsSync(EXPORT_DIR)) {
+  fs.mkdirSync(EXPORT_DIR, { recursive: true });
+}
 
 /**
  * 生成唯一文件名
@@ -35,6 +44,43 @@ function generateFileName(table, format) {
 }
 
 /**
+ * 构建查询语句
+ * 功能：根据表名和过滤条件构建SQL查询语句
+ * @param {string} table - 表名
+ * @param {object} filters - 过滤条件
+ * @returns {object} - 包含查询语句和参数的对象
+ */
+function buildQuery(table, filters = {}) {
+  let query = `SELECT * FROM ${table}`;
+  let params = [];
+  
+  // 添加过滤条件
+  if (Object.keys(filters).length > 0) {
+    query += ' WHERE';
+    const conditions = [];
+    
+    if (filters.startDate) {
+      conditions.push('created_at >= ?');
+      params.push(filters.startDate);
+    }
+    
+    if (filters.endDate) {
+      conditions.push('created_at <= ?');
+      params.push(filters.endDate);
+    }
+    
+    if (filters.status) {
+      conditions.push('status = ?');
+      params.push(filters.status);
+    }
+    
+    query += ' ' + conditions.join(' AND');
+  }
+  
+  return { query, params };
+}
+
+/**
  * 导出为CSV格式
  * 功能：将指定表的数据导出为CSV文件
  * @param {string} table - 表名
@@ -45,31 +91,7 @@ function generateFileName(table, format) {
 async function exportToCSV(table, filters = {}) {
   try {
     // 构建查询语句
-    let query = `SELECT * FROM ${table}`;
-    let params = [];
-    
-    // 添加过滤条件
-    if (Object.keys(filters).length > 0) {
-      query += ' WHERE';
-      const conditions = [];
-      
-      if (filters.startDate) {
-        conditions.push('created_at >= ?');
-        params.push(filters.startDate);
-      }
-      
-      if (filters.endDate) {
-        conditions.push('created_at <= ?');
-        params.push(filters.endDate);
-      }
-      
-      if (filters.status) {
-        conditions.push('status = ?');
-        params.push(filters.status);
-      }
-      
-      query += ' ' + conditions.join(' AND');
-    }
+    const { query, params } = buildQuery(table, filters);
     
     // 执行查询
     const [rows] = await pool.query(query, params);
@@ -80,12 +102,7 @@ async function exportToCSV(table, filters = {}) {
     
     // 生成CSV文件
     const fileName = generateFileName(table, 'csv');
-    const filePath = path.join(__dirname, '../public/exports', fileName);
-    
-    // 确保导出目录存在
-    if (!fs.existsSync(path.join(__dirname, '../public/exports'))) {
-      fs.mkdirSync(path.join(__dirname, '../public/exports'), { recursive: true });
-    }
+    const filePath = path.join(EXPORT_DIR, fileName);
     
     // 准备CSV写入器
     const headers = Object.keys(rows[0]).map(key => ({
@@ -123,31 +140,7 @@ async function exportToCSV(table, filters = {}) {
 async function exportToExcel(table, filters = {}) {
   try {
     // 构建查询语句
-    let query = `SELECT * FROM ${table}`;
-    let params = [];
-    
-    // 添加过滤条件
-    if (Object.keys(filters).length > 0) {
-      query += ' WHERE';
-      const conditions = [];
-      
-      if (filters.startDate) {
-        conditions.push('created_at >= ?');
-        params.push(filters.startDate);
-      }
-      
-      if (filters.endDate) {
-        conditions.push('created_at <= ?');
-        params.push(filters.endDate);
-      }
-      
-      if (filters.status) {
-        conditions.push('status = ?');
-        params.push(filters.status);
-      }
-      
-      query += ' ' + conditions.join(' AND');
-    }
+    const { query, params } = buildQuery(table, filters);
     
     // 执行查询
     const [rows] = await pool.query(query, params);
@@ -158,12 +151,7 @@ async function exportToExcel(table, filters = {}) {
     
     // 生成Excel文件
     const fileName = generateFileName(table, 'xlsx');
-    const filePath = path.join(__dirname, '../public/exports', fileName);
-    
-    // 确保导出目录存在
-    if (!fs.existsSync(path.join(__dirname, '../public/exports'))) {
-      fs.mkdirSync(path.join(__dirname, '../public/exports'), { recursive: true });
-    }
+    const filePath = path.join(EXPORT_DIR, fileName);
     
     // 创建工作簿和工作表
     const workbook = XLSX.utils.book_new();

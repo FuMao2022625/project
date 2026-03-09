@@ -4,24 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>热成像监控</title>
+    <link rel="stylesheet" href="/stylesheets/style.css">
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #f5f5f5;
-        }
-        .container {
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            padding: 20px;
-        }
-        h1 {
-            color: #333;
-            text-align: center;
-        }
         .thermal-container {
             display: flex;
             flex-direction: column;
@@ -146,20 +130,41 @@
     </div>
 
     <script>
+        // 性能优化：使用requestAnimationFrame进行渲染
+        window.requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame ||
+                                      window.webkitRequestAnimationFrame || window.msRequestAnimationFrame;
+        
         let eventSource;
         let reconnectAttempts = 0;
         const maxReconnectAttempts = 5;
         const reconnectDelay = 3000; // 3秒
         const canvas = document.getElementById('thermalCanvas');
         const ctx = canvas.getContext('2d');
+        const logElement = document.getElementById('log');
+        const logFragment = document.createDocumentFragment();
+        let logCount = 0;
+        const maxLogEntries = 50;
 
         function log(message) {
-            const logElement = document.getElementById('log');
             const timestamp = new Date().toLocaleTimeString();
             const logEntry = document.createElement('div');
             logEntry.textContent = `[${timestamp}] ${message}`;
-            logElement.appendChild(logEntry);
-            logElement.scrollTop = logElement.scrollHeight;
+            logFragment.appendChild(logEntry);
+            
+            logCount++;
+            if (logCount > maxLogEntries) {
+                const firstLog = logElement.querySelector('div:nth-child(2)');
+                if (firstLog) {
+                    logElement.removeChild(firstLog);
+                    logCount--;
+                }
+            }
+            
+            // 批量更新DOM
+            if (logFragment.childNodes.length >= 5) {
+                logElement.appendChild(logFragment);
+                logElement.scrollTop = logElement.scrollHeight;
+            }
         }
 
         function updateStatus(connected, detail) {
@@ -199,31 +204,33 @@
 
         // 渲染热成像数据
         function renderThermalData(data) {
-            try {
-                const canvasWidth = canvas.width;
-                const canvasHeight = canvas.height;
-                
-                // 清空画布
-                ctx.clearRect(0, 0, canvasWidth, canvasHeight);
-                
-                // 计算每个点的大小
-                const gridSize = Math.min(canvasWidth, canvasHeight) / 20;
-                
-                // 绘制热成像
-                data.forEach(point => {
-                    const x = point.x * gridSize;
-                    const y = point.y * gridSize;
-                    const color = getColor(point.temperature);
+            requestAnimationFrame(() => {
+                try {
+                    const canvasWidth = canvas.width;
+                    const canvasHeight = canvas.height;
                     
-                    ctx.fillStyle = color;
-                    ctx.fillRect(x, y, gridSize, gridSize);
-                });
-                
-                updateLastUpdate();
-                log(`渲染热成像数据成功，包含 ${data.length} 个数据点`);
-            } catch (error) {
-                log(`渲染热成像数据失败: ${error.message}`);
-            }
+                    // 清空画布
+                    ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+                    
+                    // 计算每个点的大小
+                    const gridSize = Math.min(canvasWidth, canvasHeight) / 20;
+                    
+                    // 绘制热成像
+                    data.forEach(point => {
+                        const x = point.x * gridSize;
+                        const y = point.y * gridSize;
+                        const color = getColor(point.temperature);
+                        
+                        ctx.fillStyle = color;
+                        ctx.fillRect(x, y, gridSize, gridSize);
+                    });
+                    
+                    updateLastUpdate();
+                    log(`渲染热成像数据成功，包含 ${data.length} 个数据点`);
+                } catch (error) {
+                    log(`渲染热成像数据失败: ${error.message}`);
+                }
+            });
         }
 
         function connectSSE() {
@@ -247,7 +254,10 @@
                 });
                 
                 eventSource.addEventListener('heartbeat', function(event) {
-                    log('收到心跳信号');
+                    // 减少日志输出，只在控制台显示
+                    if (console && console.log) {
+                        console.log('收到心跳信号');
+                    }
                 });
                 
                 eventSource.addEventListener('open', function() {

@@ -5,12 +5,18 @@
  * 创建日期：2024-01-01
  * 主要修改记录：
  * 2024-01-01 - 初始化文件
+ * 2026-03-09 - 性能优化和代码重构
  */
 
 // 导入依赖模块
-var express = require('express');
-var router = express.Router();
+const express = require('express');
+const router = express.Router();
 const { pool } = require('../db'); // 数据库连接池
+
+// 缓存最新的热成像数据
+let cachedThermalData = null;
+let lastDataTimestamp = 0;
+const CACHE_DURATION = 5000; // 缓存5秒
 
 /**
  * 模拟热成像数据生成函数
@@ -43,6 +49,41 @@ function compressData(data) {
   } catch (error) {
     console.error('数据压缩失败:', error);
     return null;
+  }
+}
+
+/**
+ * 从数据库获取最新的热成像数据
+ * @returns {Promise<Array>} - 热成像数据数组
+ */
+async function getLatestThermalData() {
+  // 检查缓存是否有效
+  const now = Date.now();
+  if (cachedThermalData && (now - lastDataTimestamp) < CACHE_DURATION) {
+    return cachedThermalData;
+  }
+  
+  try {
+    // 只选择需要的字段，提高查询性能
+    const [rows] = await pool.query(
+      'SELECT temperature_data FROM thermal_images ORDER BY captured_at DESC LIMIT 1'
+    );
+    
+    let thermalData;
+    if (rows.length > 0) {
+      thermalData = JSON.parse(rows[0].temperature_data);
+      // 更新缓存
+      cachedThermalData = thermalData;
+      lastDataTimestamp = now;
+    } else {
+      // 如果数据库中没有数据，生成模拟数据
+      thermalData = generateThermalData();
+    }
+    return thermalData;
+  } catch (dbError) {
+    console.error('获取热成像数据失败:', dbError);
+    // 生成模拟数据作为备用
+    return generateThermalData();
   }
 }
 
@@ -84,24 +125,8 @@ router.get('/stream', async function(req, res, next) {
     try {
       if (!isConnected) return;
       
-      // 从数据库获取最新的热成像数据
-      let thermalData;
-      try {
-        const [rows] = await pool.query(
-          'SELECT * FROM thermal_images ORDER BY captured_at DESC LIMIT 1'
-        );
-        
-        if (rows.length > 0) {
-          thermalData = JSON.parse(rows[0].temperature_data);
-        } else {
-          // 如果数据库中没有数据，生成模拟数据
-          thermalData = generateThermalData();
-        }
-      } catch (dbError) {
-        console.error('获取热成像数据失败:', dbError);
-        // 生成模拟数据作为备用
-        thermalData = generateThermalData();
-      }
+      // 从数据库获取最新的热成像数据（带缓存）
+      const thermalData = await getLatestThermalData();
       
       // 压缩数据
       const compressedData = compressData(thermalData);
@@ -148,8 +173,9 @@ router.get('/stream', async function(req, res, next) {
 router.get('/history', async function(req, res, next) {
   try {
     const limit = parseInt(req.query.limit) || 10;
+    // 只选择需要的字段，提高查询性能
     const [rows] = await pool.query(
-      'SELECT * FROM thermal_images ORDER BY captured_at DESC LIMIT ?',
+      'SELECT id, image_id, robot_id, captured_at, image_path FROM thermal_images ORDER BY captured_at DESC LIMIT ?',
       [limit]
     );
     
