@@ -1,6 +1,12 @@
 const { spawn } = require('child_process');
 const ffmpeg = require('ffmpeg-static');
 
+// 检查ffmpeg路径是否存在
+console.log('FFmpeg路径:', ffmpeg);
+if (!ffmpeg) {
+  console.error('未找到FFmpeg可执行文件');
+}
+
 class VideoStreamManager {
   constructor(io) {
     this.io = io;
@@ -33,18 +39,15 @@ class VideoStreamManager {
   startStream(socket, config) {
     const streamId = socket.id;
     
-    // 启动FFmpeg进程进行视频处理
-    const ffmpegProcess = spawn(ffmpeg, [
-      '-f', 'gdigrab', // Windows屏幕捕获
-      '-framerate', '30',
-      '-i', 'desktop',
-      '-f', 'mpegts',
-      '-codec:v', 'mpeg1video',
-      '-s', config.resolution || '1280x720',
-      '-b:v', config.bitrate || '1000k',
-      '-r', '30',
-      'pipe:1'
-    ]);
+    // 构建FFmpeg命令
+    const resolution = config.resolution || '1280x720';
+    const bitrate = config.bitrate || '1000k';
+    const command = `${ffmpeg} -f gdigrab -framerate 30 -i desktop -f mpegts -codec:v mpeg1video -s ${resolution} -b:v ${bitrate} -r 30 pipe:1`;
+    
+    // 启动FFmpeg进程进行视频处理，使用shell选项
+    const ffmpegProcess = spawn(command, [], {
+      shell: true
+    });
 
     ffmpegProcess.stdout.on('data', (data) => {
       // 通过Socket.io发送视频数据
