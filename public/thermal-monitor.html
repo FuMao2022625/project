@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>热成像数据实时监控</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .status {
+            text-align: center;
+            margin: 20px 0;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .status.connected {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .status.disconnected {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        .thermal-grid {
+            display: grid;
+            grid-template-columns: repeat(10, 40px);
+            grid-template-rows: repeat(10, 40px);
+            gap: 2px;
+            margin: 30px auto;
+            width: fit-content;
+        }
+        .thermal-cell {
+            width: 40px;
+            height: 40px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            color: white;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+        .info-panel {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+        }
+        .info-item {
+            text-align: center;
+        }
+        .info-label {
+            font-size: 14px;
+            color: #666;
+        }
+        .info-value {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+        }
+        .timestamp {
+            text-align: center;
+            color: #666;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>热成像数据实时监控</h1>
+        
+        <div class="status" id="connectionStatus">连接中...</div>
+        
+        <div class="info-panel">
+            <div class="info-item">
+                <div class="info-label">设备ID</div>
+                <div class="info-value" id="deviceId">--</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">最高温度</div>
+                <div class="info-value" id="maxTemp">--°C</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">最低温度</div>
+                <div class="info-value" id="minTemp">--°C</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">平均温度</div>
+                <div class="info-value" id="avgTemp">--°C</div>
+            </div>
+        </div>
+        
+        <div class="thermal-grid" id="thermalGrid"></div>
+        
+        <div class="timestamp" id="lastUpdated">最后更新: --</div>
+    </div>
+    
+    <script>
+        let eventSource;
+        let reconnectAttempts = 0;
+        const maxReconnectAttempts = 5;
+        
+        // 温度到颜色的映射
+        function getColorForTemperature(temp) {
+            temp = parseFloat(temp);
+            if (temp < 20) return '#0000ff'; // 蓝色
+            if (temp < 25) return '#00ff00'; // 绿色
+            if (temp < 30) return '#ffff00'; // 黄色
+            if (temp < 35) return '#ff6600'; // 橙色
+            return '#ff0000'; // 红色
+        }
+        
+        // 初始化SSE连接
+        function initSSE() {
+            const statusElement = document.getElementById('connectionStatus');
+            
+            try {
+                eventSource = new EventSource('/thermal/thermal-stream');
+                
+                eventSource.onopen = function() {
+                    statusElement.textContent = '已连接';
+                    statusElement.className = 'status connected';
+                    reconnectAttempts = 0;
+                    console.log('SSE连接已建立');
+                };
+                
+                eventSource.onmessage = function(event) {
+                    try {
+                        const data = JSON.parse(event.data);
+                        updateThermalData(data);
+                    } catch (error) {
+                        console.error('解析SSE数据失败:', error);
+                    }
+                };
+                
+                eventSource.onerror = function(error) {
+                    statusElement.textContent = '连接断开，正在重连...';
+                    statusElement.className = 'status disconnected';
+                    console.error('SSE连接错误:', error);
+                    eventSource.close();
+                    scheduleReconnect();
+                };
+                
+            } catch (error) {
+                console.error('SSE初始化失败:', error);
+                statusElement.textContent = '连接失败';
+                statusElement.className = 'status disconnected';
+                scheduleReconnect();
+            }
+        }
+        
+        // 调度重连
+        function scheduleReconnect() {
+            if (reconnectAttempts < maxReconnectAttempts) {
+                const delay = Math.min(1000 * Math.pow(2, reconnectAttempts), 8000);
+                reconnectAttempts++;
+                console.log(`将在 ${delay}ms 后尝试重连...`);
+                setTimeout(initSSE, delay);
+            } else {
+                console.error('重连失败，已达到最大尝试次数');
+                document.getElementById('connectionStatus').textContent = '重连失败，请刷新页面';
+            }
+        }
+        
+        // 更新热成像数据
+        function updateThermalData(data) {
+            // 更新信息面板
+            document.getElementById('deviceId').textContent = data.deviceId;
+            document.getElementById('maxTemp').textContent = data.maxTemp + '°C';
+            document.getElementById('minTemp').textContent = data.minTemp + '°C';
+            document.getElementById('avgTemp').textContent = data.avgTemp + '°C';
+            
+            // 更新时间戳
+            const date = new Date(data.timestamp);
+            document.getElementById('lastUpdated').textContent = '最后更新: ' + date.toLocaleString();
+            
+            // 更新热成像网格
+            const grid = document.getElementById('thermalGrid');
+            grid.innerHTML = '';
+            
+            data.matrix.forEach(row => {
+                row.forEach(temp => {
+                    const cell = document.createElement('div');
+                    cell.className = 'thermal-cell';
+                    cell.style.backgroundColor = getColorForTemperature(temp);
+                    cell.textContent = temp;
+                    grid.appendChild(cell);
+                });
+            });
+        }
+        
+        // 页面加载时初始化
+        window.onload = function() {
+            initSSE();
+            
+            // 页面关闭时关闭连接
+            window.onbeforeunload = function() {
+                if (eventSource) {
+                    eventSource.close();
+                }
+            };
+        };
+    </script>
+</body>
+</html>
