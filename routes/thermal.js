@@ -242,15 +242,49 @@ function getLatestThermalData(limit = 1) {
 
 // SSE端点 - 实时推送热成像数据
 router.get('/thermal-stream', async function(req, res, next) {
+  console.log('SSE连接请求到达');
+  
   // 设置SSE响应头
   res.setHeader('Content-Type', 'text/event-stream');
   res.setHeader('Cache-Control', 'no-cache');
   res.setHeader('Connection', 'keep-alive');
   res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('X-Accel-Buffering', 'no'); // 禁用Nginx缓冲
+  
+  // 禁用压缩
+  res.setHeader('Content-Encoding', 'identity');
 
   let isConnectionActive = true;
   let consecutiveErrors = 0;
   const MAX_CONSECUTIVE_ERRORS = 5;
+  const HEARTBEAT_INTERVAL = 30000; // 30秒心跳
+  const DATA_INTERVAL = 1000; // 1秒发送一次数据
+
+  // 发送消息的函数
+  const sendMessage = (message) => {
+    if (!isConnectionActive) return;
+    try {
+      const messageStr = JSON.stringify(message);
+      const sseMessage = `data: ${messageStr}\n\n`;
+      console.log('发送SSE消息:', message.type || 'data');
+      res.write(sseMessage);
+      // 确保消息立即发送
+      if (res.flush) {
+        res.flush();
+      }
+    } catch (error) {
+      console.warn('发送消息失败:', error.message);
+    }
+  };
+
+  // 发送心跳的函数
+  const sendHeartbeat = () => {
+    const heartbeatData = {
+      type: 'heartbeat',
+      timestamp: new Date().toISOString()
+    };
+    sendMessage(heartbeatData);
+  };
 
   // 发送数据的函数
   const sendData = async () => {
@@ -278,9 +312,17 @@ router.get('/thermal-stream', async function(req, res, next) {
       await saveThermalData(data);
 
       // 发送给客户端
-      res.write(`data: ${JSON.stringify(data)}\n\n`);
+      sendMessage(data);
 
     } catch (error) {
+      // 忽略连接中断错误
+      if (error.code === 'ECONNRESET' || error.message.includes('aborted')) {
+        console.log('SSE客户端连接中断:', error.message);
+        isConnectionActive = false;
+        res.end();
+        return;
+      }
+
       console.error('SSE数据处理错误:', error);
       consecutiveErrors++;
 
@@ -290,7 +332,8 @@ router.get('/thermal-stream', async function(req, res, next) {
         message: '数据处理错误',
         timestamp: new Date().toISOString()
       };
-      res.write(`data: ${JSON.stringify(errorData)}\n\n`);
+      
+      sendMessage(errorData);
 
       // 如果错误过多，关闭连接
       if (consecutiveErrors >= MAX_CONSECUTIVE_ERRORS) {
@@ -303,28 +346,55 @@ router.get('/thermal-stream', async function(req, res, next) {
 
   // 发送初始数据
   try {
+    console.log('发送初始热成像数据');
     await sendData();
   } catch (error) {
     console.error('发送初始数据失败:', error);
   }
 
-  // 定期发送数据
-  const interval = setInterval(sendData, 1000); // 每1秒发送一次数据
+  // 定期发送数据（1秒一次）
+  console.log('开始定期发送数据，间隔:', DATA_INTERVAL, 'ms');
+  const dataInterval = setInterval(sendData, DATA_INTERVAL);
+  
+  // 定期发送心跳（30秒一次）
+  console.log('开始定期发送心跳，间隔:', HEARTBEAT_INTERVAL, 'ms');
+  const heartbeatInterval = setInterval(sendHeartbeat, HEARTBEAT_INTERVAL);
 
   // 处理连接关闭
   req.on('close', () => {
+    console.log('SSE连接已关闭（客户端主动断开）');
     isConnectionActive = false;
-    clearInterval(interval);
-    console.log('SSE连接已关闭');
+    clearInterval(dataInterval);
+    clearInterval(heartbeatInterval);
   });
 
   // 处理连接错误
   req.on('error', (error) => {
-    console.error('SSE连接错误:', error);
+    // 忽略正常的连接中断
+    if (error.code === 'ECONNRESET' || error.message.includes('aborted')) {
+      console.log('SSE连接错误（客户端断开）:', error.message);
+    } else {
+      console.error('SSE连接错误:', error);
+    }
     isConnectionActive = false;
-    clearInterval(interval);
-    res.end();
+    clearInterval(dataInterval);
+    clearInterval(heartbeatInterval);
+    try {
+      res.end();
+    } catch (endError) {
+      // 忽略结束连接时的错误
+    }
   });
+
+  // 处理响应错误
+  res.on('error', (error) => {
+    console.error('SSE响应错误:', error);
+    isConnectionActive = false;
+    clearInterval(dataInterval);
+    clearInterval(heartbeatInterval);
+  });
+  
+  console.log('SSE连接已建立，等待客户端连接');
 });
 
 // 获取最新热成像数据（REST API）
