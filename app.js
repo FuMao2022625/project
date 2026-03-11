@@ -3,8 +3,6 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
-var http = require('http');
-var socketIO = require('socket.io');
 
 require('./db');
 
@@ -13,15 +11,6 @@ var usersRouter = require('./routes/users');
 var thermalRouter = require('./routes/thermal');
 
 var app = express();
-var server = http.createServer(app);
-var io = socketIO(server);
-
-// 存储Socket.io实例，供其他模块使用
-app.set('io', io);
-
-// 启动视频流管理
-const VideoStreamManager = require('./video-stream');
-new VideoStreamManager(io);
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -53,7 +42,4 @@ app.use(function(err, req, res, next) {
   res.render('error');
 });
 
-module.exports = {
-  app: app,
-  server: server
-};
+module.exports = app;
