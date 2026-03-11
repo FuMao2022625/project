@@ -4,7 +4,7 @@ var connection = mysql.createConnection({
   host: 'localhost',
   user: 'root',
   password: '12305',
-  database: 'express'
+  database: 'thermal_sensor_data'
 });
 
 connection.connect(function(err) {
