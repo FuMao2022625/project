@@ -38,23 +38,35 @@
         }
         .thermal-grid {
             display: grid;
-            grid-template-columns: repeat(10, 40px);
-            grid-template-rows: repeat(10, 40px);
+            grid-template-columns: repeat(8, 50px);
+            grid-template-rows: repeat(8, 50px);
             gap: 2px;
             margin: 30px auto;
             width: fit-content;
         }
         .thermal-cell {
-            width: 40px;
-            height: 40px;
+            width: 50px;
+            height: 50px;
             border-radius: 4px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 12px;
+            font-size: 11px;
             font-weight: bold;
             color: white;
             text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+        .error-message {
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            text-align: center;
+            display: none;
+        }
+        .error-message.show {
+            display: block;
         }
         .info-panel {
             display: flex;
@@ -110,6 +122,8 @@
         
         <div class="thermal-grid" id="thermalGrid"></div>
         
+        <div class="error-message" id="errorMessage"></div>
+        
         <div class="timestamp" id="lastUpdated">最后更新: --</div>
     </div>
     
@@ -145,9 +159,25 @@
                 eventSource.onmessage = function(event) {
                     try {
                         const data = JSON.parse(event.data);
+                        
+                        // 检查是否为错误消息
+                        if (data.type === 'error') {
+                            showError(data.message || '服务器返回错误');
+                            return;
+                        }
+                        
+                        // 隐藏错误消息
+                        hideError();
+                        
+                        // 验证数据格式
+                        if (!validateData(data)) {
+                            return;
+                        }
+                        
                         updateThermalData(data);
                     } catch (error) {
                         console.error('解析SSE数据失败:', error);
+                        showError('数据解析失败: ' + error.message);
                     }
                 };
                 
@@ -177,7 +207,74 @@
             } else {
                 console.error('重连失败，已达到最大尝试次数');
                 document.getElementById('connectionStatus').textContent = '重连失败，请刷新页面';
+                showError('连接失败，请刷新页面重试');
             }
+        }
+        
+        // 显示错误消息
+        function showError(message) {
+            const errorElement = document.getElementById('errorMessage');
+            errorElement.textContent = '错误: ' + message;
+            errorElement.classList.add('show');
+            setTimeout(hideError, 5000); // 5秒后自动隐藏
+        }
+        
+        // 隐藏错误消息
+        function hideError() {
+            const errorElement = document.getElementById('errorMessage');
+            errorElement.classList.remove('show');
+        }
+        
+        // 验证数据格式
+        function validateData(data) {
+            // 验证矩阵存在
+            if (!data.matrix || !Array.isArray(data.matrix)) {
+                showError('数据格式错误: 缺少温度矩阵');
+                return false;
+            }
+            
+            // 验证矩阵维度 (8x8)
+            if (data.matrix.length !== 8) {
+                showError(`数据格式错误: 矩阵行数不正确 (${data.matrix.length}行，应为8行)`);
+                return false;
+            }
+            
+            for (let i = 0; i < data.matrix.length; i++) {
+                if (!Array.isArray(data.matrix[i]) || data.matrix[i].length !== 8) {
+                    showError(`数据格式错误: 第${i+1}行列数不正确`);
+                    return false;
+                }
+            }
+            
+            // 验证温度值范围
+            const MIN_TEMP = -40;
+            const MAX_TEMP = 150;
+            for (let i = 0; i < data.matrix.length; i++) {
+                for (let j = 0; j < data.matrix[i].length; j++) {
+                    const temp = parseFloat(data.matrix[i][j]);
+                    if (isNaN(temp)) {
+                        showError(`数据错误: 第${i+1}行第${j+1}列温度值无效`);
+                        return false;
+                    }
+                    if (temp < MIN_TEMP || temp > MAX_TEMP) {
+                        showError(`数据错误: 温度值 ${temp}°C 超出范围 (${MIN_TEMP}°C ~ ${MAX_TEMP}°C)`);
+                        return false;
+                    }
+                }
+            }
+            
+            // 验证元数据
+            if (!data.deviceId) {
+                showError('数据格式错误: 缺少设备ID');
+                return false;
+            }
+            
+            if (!data.dataId) {
+                showError('数据格式错误: 缺少数据ID');
+                return false;
+            }
+            
+            return true;
         }
         
         // 更新热成像数据
