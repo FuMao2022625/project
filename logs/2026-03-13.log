@@ -1,0 +1,14 @@
+{"timestamp":"2026-03-13T01:13:27.722Z","level":"info","message":"气体类型列表查询请求到达","data":{"requestId":"17733644077223zld9sgpc","clientIp":"::1"}}
+{"timestamp":"2026-03-13T01:13:27.730Z","level":"error","message":"查询气体类型列表失败","data":{"requestId":"17733644077223zld9sgpc","error":"ER_NO_SUCH_TABLE: Table 'thermal_sensor_data.environment_gas_data' doesn't exist"}}
+{"timestamp":"2026-03-13T01:16:45.980Z","level":"info","message":"气体类型列表查询请求到达","data":{"requestId":"1773364605980k62q3mbwm","clientIp":"::1"}}
+{"timestamp":"2026-03-13T01:16:45.982Z","level":"error","message":"查询气体类型列表失败","data":{"requestId":"1773364605980k62q3mbwm","error":"ER_NO_SUCH_TABLE: Table 'thermal_sensor_data.environment_gas_data' doesn't exist"}}
+{"timestamp":"2026-03-13T01:19:03.713Z","level":"info","message":"气体类型列表查询请求到达","data":{"requestId":"1773364743713mbr2cv3pc","clientIp":"::1"}}
+{"timestamp":"2026-03-13T01:19:03.715Z","level":"info","message":"查询气体类型列表成功（使用模拟数据）","data":{"requestId":"1773364743713mbr2cv3pc","total":6}}
+{"timestamp":"2026-03-13T01:19:41.657Z","level":"info","message":"气体浓度数据查询请求到达","data":{"requestId":"1773364781657wr5nralvw","clientIp":"::1"}}
+{"timestamp":"2026-03-13T01:19:41.658Z","level":"info","message":"处理气体浓度数据查询","data":{"requestId":"1773364781657wr5nralvw","startTime":"2026-03-12T01:19:41.658Z","endTime":"2026-03-13T01:19:41.658Z","page":1,"pageSize":10}}
+{"timestamp":"2026-03-13T01:19:41.659Z","level":"info","message":"查询气体浓度数据成功（使用模拟数据）","data":{"requestId":"1773364781657wr5nralvw","total":3}}
+{"timestamp":"2026-03-13T01:25:27.489Z","level":"info","message":"气体浓度数据查询请求到达","data":{"requestId":"1773365127489fo49lvpfe","clientIp":"::ffff:127.0.0.1"}}
+{"timestamp":"2026-03-13T01:25:27.490Z","level":"info","message":"处理气体浓度数据查询","data":{"requestId":"1773365127489fo49lvpfe","startTime":"2026-03-12T01:25:27.490Z","endTime":"2026-03-13T01:25:27.490Z","page":1,"pageSize":10}}
+{"timestamp":"2026-03-13T01:25:27.492Z","level":"info","message":"查询气体浓度数据成功（使用模拟数据）","data":{"requestId":"1773365127489fo49lvpfe","total":3}}
+{"timestamp":"2026-03-13T01:26:04.760Z","level":"info","message":"气体类型列表查询请求到达","data":{"requestId":"1773365164759ou0r245m1","clientIp":"::ffff:127.0.0.1"}}
+{"timestamp":"2026-03-13T01:26:04.761Z","level":"info","message":"查询气体类型列表成功（使用模拟数据）","data":{"requestId":"1773365164759ou0r245m1","total":6}}

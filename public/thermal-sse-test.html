@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>热成像 SSE 实时数据测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .status-bar {
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .status-connected {
+            background-color: #f6ffed;
+            color: #52c41a;
+            border: 1px solid #b7eb8f;
+        }
+        .status-connecting {
+            background-color: #fff7e6;
+            color: #fa8c16;
+            border: 1px solid #ffd591;
+        }
+        .status-error {
+            background-color: #fff1f0;
+            color: #ff4d4f;
+            border: 1px solid #ffccc7;
+        }
+        .data-display {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #f0f8ff;
+            border-radius: 4px;
+            min-height: 300px;
+        }
+        .data-item {
+            margin: 10px 0;
+            padding: 10px;
+            background-color: #e6f7ff;
+            border-left: 4px solid #1890ff;
+            border-radius: 4px;
+        }
+        .heartbeat {
+            color: #52c41a;
+            background-color: #f6ffed;
+            border-left: 4px solid #52c41a;
+            font-style: italic;
+        }
+        .temperature-matrix {
+            display: grid;
+            grid-template-columns: repeat(8, 40px);
+            gap: 2px;
+            margin: 10px 0;
+        }
+        .temp-cell {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            border-radius: 2px;
+        }
+        .temp-low {
+            background-color: #91d5ff;
+        }
+        .temp-medium {
+            background-color: #ffd666;
+        }
+        .temp-high {
+            background-color: #ff7875;
+        }
+        .connection-info {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #fafafa;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin: 10px 0;
+        }
+        .stat-item {
+            padding: 10px;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+            text-align: center;
+        }
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+        }
+        .stat-value {
+            font-size: 18px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>热成像 SSE 实时数据测试</h1>
+        
+        <div class="status-bar" id="status-bar">
+            正在连接 SSE 服务器...
+        </div>
+        
+        <div class="connection-info">
+            <div id="connection-stats">
+                连接状态: 未连接<br>
+                数据接收: 0 条<br>
+                最后更新: 从未
+            </div>
+        </div>
+        
+        <div class="stats">
+            <div class="stat-item">
+                <div class="stat-label">当前温度</div>
+                <div class="stat-value" id="current-temp">--°C</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">湿度</div>
+                <div class="stat-value" id="current-humidity">--%</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">电池电量</div>
+                <div class="stat-value" id="current-battery">--%</div>
+            </div>
+        </div>
+        
+        <div class="data-display" id="data-display">
+            <p>等待接收数据...</p>
+        </div>
+    </div>
+
+    <script>
+        const statusBar = document.getElementById('status-bar');
+        const dataDisplay = document.getElementById('data-display');
+        const connectionStats = document.getElementById('connection-stats');
+        const currentTemp = document.getElementById('current-temp');
+        const currentHumidity = document.getElementById('current-humidity');
+        const currentBattery = document.getElementById('current-battery');
+        
+        let eventSource = null;
+        let reconnectAttempts = 0;
+        const MAX_RECONNECT_ATTEMPTS = 5;
+        const INITIAL_RECONNECT_DELAY = 1000;
+        let reconnectDelay = INITIAL_RECONNECT_DELAY;
+        let dataReceivedCount = 0;
+        
+        function updateStatus(status, message) {
+            statusBar.textContent = message;
+            statusBar.className = `status-bar status-${status}`;
+        }
+        
+        function updateConnectionStats() {
+            const lastUpdate = new Date().toLocaleString();
+            connectionStats.innerHTML = `
+                连接状态: ${eventSource ? '已连接' : '未连接'}<br>
+                数据接收: ${dataReceivedCount} 条<br>
+                最后更新: ${lastUpdate}
+            `;
+        }
+        
+        function displayData(data) {
+            const div = document.createElement('div');
+            div.className = 'data-item';
+            
+            if (data.type === 'heartbeat') {
+                div.className += ' heartbeat';
+                div.innerHTML = `<strong>心跳</strong>: ${data.timestamp}`;
+            } else if (data.type === 'status') {
+                div.innerHTML = `<strong>状态</strong>: ${data.status}<br><strong>消息</strong>: ${data.message}<br><strong>时间</strong>: ${data.timestamp}`;
+            } else if (data.type === 'data') {
+                dataReceivedCount++;
+                updateConnectionStats();
+                
+                // 更新统计信息
+                currentTemp.textContent = `${data.data.temperature}°C`;
+                currentHumidity.textContent = `${data.data.humidity}%`;
+                currentBattery.textContent = `${data.data.battery}%`;
+                
+                // 生成温度矩阵
+                const matrixHtml = generateTemperatureMatrix(data.data.maxTemp);
+                
+                div.innerHTML = `
+                    <strong>热成像数据</strong><br>
+                    <strong>设备</strong>: ${data.data.sensorType}<br>
+                    <strong>时间</strong>: ${data.data.timestamp}<br>
+                    <strong>温度</strong>: ${data.data.temperature}°C<br>
+                    <strong>湿度</strong>: ${data.data.humidity}%<br>
+                    <strong>烟雾级别</strong>: ${data.data.smokeLevel}<br>
+                    <strong>火灾风险</strong>: ${data.data.fireRisk}<br>
+                    <strong>环境状态</strong>: ${data.data.envStatus}<br>
+                    <strong>电池电量</strong>: ${data.data.battery}%<br>
+                    <strong>是否检测到人</strong>: ${data.data.humanDetected ? '是' : '否'}<br>
+                    <strong>温度矩阵</strong>:<br>
+                    ${matrixHtml}
+                    <strong>矩阵信息</strong>: 最小 ${data.data.maxTemp.metadata.min}°C, 最大 ${data.data.maxTemp.metadata.max}°C, 平均 ${data.data.maxTemp.metadata.avg.toFixed(1)}°C
+                `;
+            }
+            
+            dataDisplay.appendChild(div);
+            dataDisplay.scrollTop = dataDisplay.scrollHeight;
+            
+            // 限制显示的消息数量
+            if (dataDisplay.children.length > 50) {
+                dataDisplay.removeChild(dataDisplay.firstChild);
+            }
+        }
+        
+        function generateTemperatureMatrix(maxTemp) {
+            const matrix = maxTemp.matrix;
+            const metadata = maxTemp.metadata;
+            const min = metadata.min;
+            const max = metadata.max;
+            const range = max - min;
+            
+            let html = '<div class="temperature-matrix">';
+            
+            matrix.forEach(row => {
+                row.forEach(temp => {
+                    const ratio = (temp - min) / range;
+                    let className = 'temp-low';
+                    if (ratio > 0.66) className = 'temp-high';
+                    else if (ratio > 0.33) className = 'temp-medium';
+                    
+                    html += `<div class="temp-cell ${className}">${temp}</div>`;
+                });
+            });
+            
+            html += '</div>';
+            return html;
+        }
+        
+        function displayError(message) {
+            const div = document.createElement('div');
+            div.className = 'data-item error';
+            div.innerHTML = `<strong>错误</strong>: ${message}`;
+            dataDisplay.appendChild(div);
+            dataDisplay.scrollTop = dataDisplay.scrollHeight;
+        }
+        
+        function initSSE() {
+            if (eventSource) {
+                eventSource.close();
+            }
+            
+            updateStatus('connecting', '正在连接 SSE 服务器...');
+            
+            try {
+                eventSource = new EventSource('/thermal-sse/stream');
+                
+                eventSource.onmessage = function(event) {
+                    try {
+                        const data = JSON.parse(event.data);
+                        displayData(data);
+                        if (data.type === 'status' && data.status === 'connected') {
+                            updateStatus('connected', '连接已建立，正在接收数据');
+                            reconnectAttempts = 0;
+                            reconnectDelay = INITIAL_RECONNECT_DELAY;
+                        }
+                    } catch (error) {
+                        displayError('解析数据失败: ' + error.message);
+                    }
+                };
+                
+                eventSource.onerror = function(error) {
+                    console.error('SSE 连接错误:', error);
+                    updateStatus('error', '连接错误，正在尝试重连...');
+                    
+                    if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
+                        setTimeout(() => {
+                            reconnectAttempts++;
+                            reconnectDelay *= 2;
+                            if (reconnectDelay > 10000) reconnectDelay = 10000;
+                            console.log(`尝试重连 (${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS})，延迟 ${reconnectDelay}ms`);
+                            initSSE();
+                        }, reconnectDelay);
+                    } else {
+                        updateStatus('error', '重连失败，请刷新页面');
+                        if (eventSource) {
+                            eventSource.close();
+                            eventSource = null;
+                        }
+                    }
+                };
+                
+                eventSource.onopen = function() {
+                    console.log('SSE 连接已建立');
+                    updateStatus('connected', '连接已建立');
+                };
+            } catch (error) {
+                console.error('初始化 SSE 失败:', error);
+                updateStatus('error', '初始化 SSE 失败: ' + error.message);
+            }
+        }
+        
+        // 初始化 SSE 连接
+        initSSE();
+        
+        // 页面卸载时关闭连接
+        window.addEventListener('beforeunload', function() {
+            if (eventSource) {
+                eventSource.close();
+            }
+        });
+    </script>
+</body>
+</html>

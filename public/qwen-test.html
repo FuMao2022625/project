@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Qwen模型测试</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #f5f5f5;
+    }
+    .container {
+      background-color: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+    .form-group {
+      margin-bottom: 20px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    textarea {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      resize: vertical;
+      min-height: 100px;
+      font-family: Arial, sans-serif;
+    }
+    button {
+      padding: 10px 20px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    .response {
+      margin-top: 20px;
+      padding: 15px;
+      background-color: #f9f9f9;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      min-height: 100px;
+    }
+    .status {
+      margin-top: 10px;
+      padding: 10px;
+      background-color: #e3f2fd;
+      border: 1px solid #bbdefb;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    .metrics {
+      margin-top: 20px;
+      padding: 15px;
+      background-color: #fff8e1;
+      border: 1px solid #ffcc80;
+      border-radius: 4px;
+    }
+    .metrics h3 {
+      margin-top: 0;
+      color: #e65100;
+    }
+    .metrics table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+    .metrics th, .metrics td {
+      padding: 8px;
+      text-align: left;
+      border-bottom: 1px solid #ffcc80;
+    }
+    .metrics th {
+      background-color: #ffecb3;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Qwen大语言模型测试</h1>
+    
+    <div class="form-group">
+      <label for="prompt">输入提示文本：</label>
+      <textarea id="prompt" placeholder="请输入您的问题或指令...">Hello, Qwen! 请介绍一下你自己。</textarea>
+    </div>
+    
+    <div class="form-group">
+      <button id="send-btn">发送请求</button>
+      <button id="health-btn" style="margin-left: 10px; background-color: #2196F3;">健康检查</button>
+      <button id="metrics-btn" style="margin-left: 10px; background-color: #ff9800;">性能指标</button>
+    </div>
+    
+    <div class="status" id="status">
+      就绪
+    </div>
+    
+    <div class="response" id="response">
+      模型响应将显示在这里...
+    </div>
+    
+    <div class="metrics" id="metrics" style="display: none;">
+      <h3>性能指标</h3>
+      <table id="metrics-table">
+        <tr>
+          <th>指标</th>
+          <th>值</th>
+        </tr>
+      </table>
+    </div>
+  </div>
+  
+  <script src="js/qwen-client.js"></script>
+  <script>
+    // 初始化QwenClient
+    const qwenClient = new QwenClient('/qwen/chat');
+    
+    // 发送请求按钮点击事件
+    document.getElementById('send-btn').addEventListener('click', async () => {
+      const prompt = document.getElementById('prompt').value;
+      const status = document.getElementById('status');
+      const response = document.getElementById('response');
+      
+      status.textContent = '发送请求中...';
+      response.textContent = '等待响应...';
+      
+      const result = await qwenClient.sendRequest(prompt);
+      
+      if (result.success) {
+        status.textContent = `请求成功，响应时间：${result.responseTime}ms`;
+        response.textContent = result.content;
+      } else {
+        status.textContent = `请求失败：${result.error}`;
+        response.textContent = '请求失败，请检查网络连接或API密钥配置';
+      }
+    });
+    
+    // 健康检查按钮点击事件
+    document.getElementById('health-btn').addEventListener('click', async () => {
+      const status = document.getElementById('status');
+      const response = document.getElementById('response');
+      
+      status.textContent = '健康检查中...';
+      response.textContent = '检查服务状态...';
+      
+      const result = await qwenClient.healthCheck();
+      
+      if (result.success) {
+        status.textContent = '健康检查成功';
+        response.textContent = JSON.stringify(result, null, 2);
+      } else {
+        status.textContent = `健康检查失败：${result.error}`;
+        response.textContent = '服务可能不可用，请检查服务器状态';
+      }
+    });
+    
+    // 性能指标按钮点击事件
+    document.getElementById('metrics-btn').addEventListener('click', async () => {
+      const status = document.getElementById('status');
+      const metricsDiv = document.getElementById('metrics');
+      const metricsTable = document.getElementById('metrics-table');
+      
+      status.textContent = '获取性能指标中...';
+      
+      const result = await qwenClient.getMetrics();
+      
+      if (result.success) {
+        status.textContent = '获取性能指标成功';
+        
+        // 清空表格
+        metricsTable.innerHTML = '<tr><th>指标</th><th>值</th></tr>';
+        
+        // 填充表格
+        const metrics = result.metrics;
+        for (const [key, value] of Object.entries(metrics)) {
+          const row = metricsTable.insertRow();
+          const keyCell = row.insertCell(0);
+          const valueCell = row.insertCell(1);
+          keyCell.textContent = key;
+          valueCell.textContent = typeof value === 'object' ? JSON.stringify(value) : value;
+        }
+        
+        // 显示指标面板
+        metricsDiv.style.display = 'block';
+      } else {
+        status.textContent = `获取性能指标失败：${result.error}`;
+        metricsDiv.style.display = 'none';
+      }
+    });
+  </script>
+</body>
+</html>

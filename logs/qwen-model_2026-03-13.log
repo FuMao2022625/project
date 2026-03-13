@@ -1,0 +1,293 @@
+[2026-03-13T06:18:18.405Z] [INFO] [req_1773382698405_3ph15blza] 发送请求到Qwen模型: Hello, Qwen!...
+[2026-03-13T06:18:18.639Z] [ERROR] [req_1773382698405_3ph15blza] 请求失败，响应时间: 234ms
+Error: AxiosError: Request failed with status code 401
+    at settle (C:\Users\ma170\Desktop\project\node_modules\axios\dist\node\axios.cjs:2304:7)
+    at IncomingMessage.handleStreamEnd (C:\Users\ma170\Desktop\project\node_modules\axios\dist\node\axios.cjs:3772:13)
+    at IncomingMessage.emit (node:events:520:35)
+    at endReadableNT (node:internal/streams/readable:1701:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:89:21)
+    at Axios.request (C:\Users\ma170\Desktop\project\node_modules\axios\dist\node\axios.cjs:5110:41)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async QwenModel.sendRequest (C:\Users\ma170\Desktop\project\qwen-model.js:46:24)
+    at async C:\Users\ma170\Desktop\project\routes\qwen.js:35:22
+[2026-03-13T06:28:09.601Z] [INFO] [req_1773383289601_gfgpipyvr] 发送请求到Qwen模型: Hello, Qwen! ?????????...
+[2026-03-13T06:28:09.842Z] [ERROR] [req_1773383289601_gfgpipyvr] 请求失败，响应时间: 240ms
+Error: AxiosError: Request failed with status code 401
+    at settle (C:\Users\ma170\Desktop\project\node_modules\axios\dist\node\axios.cjs:2304:7)
+    at IncomingMessage.handleStreamEnd (C:\Users\ma170\Desktop\project\node_modules\axios\dist\node\axios.cjs:3772:13)
+    at IncomingMessage.emit (node:events:520:35)
+    at endReadableNT (node:internal/streams/readable:1701:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:89:21)
+    at Axios.request (C:\Users\ma170\Desktop\project\node_modules\axios\dist\node\axios.cjs:5110:41)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async QwenModel.sendRequest (C:\Users\ma170\Desktop\project\qwen-model.js:46:24)
+    at async C:\Users\ma170\Desktop\project\routes\qwen.js:35:22
+[2026-03-13T06:28:35.074Z] [INFO] [req_1773383315074_4oj185s19] 发送请求到Qwen模型: Hello, Qwen! 请介绍一下你自己。...
+[2026-03-13T06:28:35.267Z] [ERROR] [req_1773383315074_4oj185s19] 请求失败，响应时间: 193ms
+Error: AxiosError: Request failed with status code 401
+    at settle (C:\Users\ma170\Desktop\project\node_modules\axios\dist\node\axios.cjs:2304:7)
+    at IncomingMessage.handleStreamEnd (C:\Users\ma170\Desktop\project\node_modules\axios\dist\node\axios.cjs:3772:13)
+    at IncomingMessage.emit (node:events:520:35)
+    at endReadableNT (node:internal/streams/readable:1701:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:89:21)
+    at Axios.request (C:\Users\ma170\Desktop\project\node_modules\axios\dist\node\axios.cjs:5110:41)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async QwenModel.sendRequest (C:\Users\ma170\Desktop\project\qwen-model.js:46:24)
+    at async C:\Users\ma170\Desktop\project\routes\qwen.js:35:22
+[2026-03-13T06:28:45.775Z] [INFO] [req_1773383325775_avda3edfu] 发送请求到Qwen模型: Hello, Qwen! 请介绍一下你自己。...
+[2026-03-13T06:28:46.067Z] [ERROR] [req_1773383325775_avda3edfu] 请求失败，响应时间: 292ms
+Error: AxiosError: Request failed with status code 401
+    at settle (C:\Users\ma170\Desktop\project\node_modules\axios\dist\node\axios.cjs:2304:7)
+    at IncomingMessage.handleStreamEnd (C:\Users\ma170\Desktop\project\node_modules\axios\dist\node\axios.cjs:3772:13)
+    at IncomingMessage.emit (node:events:520:35)
+    at endReadableNT (node:internal/streams/readable:1701:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:89:21)
+    at Axios.request (C:\Users\ma170\Desktop\project\node_modules\axios\dist\node\axios.cjs:5110:41)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async QwenModel.sendRequest (C:\Users\ma170\Desktop\project\qwen-model.js:46:24)
+    at async C:\Users\ma170\Desktop\project\routes\qwen.js:35:22
+[2026-03-13T06:30:47.782Z] [INFO] [req_1773383447782_nf5zj8c0s] 发送请求到Qwen模型: Hello, Qwen! 请介绍一下你自己。...
+[2026-03-13T06:30:47.971Z] [ERROR] [req_1773383447782_nf5zj8c0s] 请求失败，响应时间: 189ms
+Error: AxiosError: Request failed with status code 401
+    at settle (C:\Users\ma170\Desktop\project\node_modules\axios\dist\node\axios.cjs:2304:7)
+    at IncomingMessage.handleStreamEnd (C:\Users\ma170\Desktop\project\node_modules\axios\dist\node\axios.cjs:3772:13)
+    at IncomingMessage.emit (node:events:520:35)
+    at endReadableNT (node:internal/streams/readable:1701:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:89:21)
+    at Axios.request (C:\Users\ma170\Desktop\project\node_modules\axios\dist\node\axios.cjs:5110:41)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async QwenModel.sendRequest (C:\Users\ma170\Desktop\project\qwen-model.js:46:24)
+    at async C:\Users\ma170\Desktop\project\routes\qwen.js:35:22
+[2026-03-13T06:34:41.243Z] [INFO] [req_1773383681243_9rtwwvfp1] 发送请求到Qwen模型: Hello, Qwen! ?????????...
+[2026-03-13T06:34:41.255Z] [ERROR] [req_1773383681243_9rtwwvfp1] 请求失败，响应时间: 12ms
+Error: AggregateError
+    at AxiosError.from (C:\Users\ma170\Desktop\project\node_modules\axios\dist\node\axios.cjs:962:24)
+    at RedirectableRequest.handleRequestError (C:\Users\ma170\Desktop\project\node_modules\axios\dist\node\axios.cjs:3794:29)
+    at RedirectableRequest.emit (node:events:508:28)
+    at eventHandlers.<computed> (C:\Users\ma170\Desktop\project\node_modules\follow-redirects\index.js:49:24)
+    at ClientRequest.emit (node:events:508:28)
+    at emitErrorEvent (node:_http_client:108:11)
+    at Socket.socketErrorListener (node:_http_client:575:5)
+    at Socket.emit (node:events:508:28)
+    at emitErrorNT (node:internal/streams/destroy:170:8)
+    at emitErrorCloseNT (node:internal/streams/destroy:129:3)
+    at Axios.request (C:\Users\ma170\Desktop\project\node_modules\axios\dist\node\axios.cjs:5110:41)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async QwenModel.sendRequest (C:\Users\ma170\Desktop\project\qwen-model.js:46:24)
+    at async C:\Users\ma170\Desktop\project\routes\qwen.js:35:22
+[2026-03-13T06:36:56.127Z] [INFO] [req_1773383816127_rjc5jtlhs] 发送请求到Qwen模型: Hello, Qwen! 请介绍一下你自己。...
+[2026-03-13T06:36:56.366Z] [ERROR] [req_1773383816127_rjc5jtlhs] 请求失败，响应时间: 239ms
+Error: AxiosError: Request failed with status code 401
+    at settle (C:\Users\ma170\Desktop\project\node_modules\axios\dist\node\axios.cjs:2304:7)
+    at IncomingMessage.handleStreamEnd (C:\Users\ma170\Desktop\project\node_modules\axios\dist\node\axios.cjs:3772:13)
+    at IncomingMessage.emit (node:events:520:35)
+    at endReadableNT (node:internal/streams/readable:1701:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:89:21)
+    at Axios.request (C:\Users\ma170\Desktop\project\node_modules\axios\dist\node\axios.cjs:5110:41)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async QwenModel.sendRequest (C:\Users\ma170\Desktop\project\qwen-model.js:46:24)
+    at async C:\Users\ma170\Desktop\project\routes\qwen.js:35:22
+[2026-03-13T06:39:06.099Z] [INFO] [req_1773383946099_jxdtoa38y] 发送请求到Qwen模型: Hello, Qwen! 请介绍一下你自己。...
+[2026-03-13T06:39:06.317Z] [ERROR] [req_1773383946099_jxdtoa38y] 请求失败，响应时间: 218ms
+Error: AxiosError: Request failed with status code 401
+    at settle (C:\Users\ma170\Desktop\project\node_modules\axios\dist\node\axios.cjs:2304:7)
+    at IncomingMessage.handleStreamEnd (C:\Users\ma170\Desktop\project\node_modules\axios\dist\node\axios.cjs:3772:13)
+    at IncomingMessage.emit (node:events:520:35)
+    at endReadableNT (node:internal/streams/readable:1701:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:89:21)
+    at Axios.request (C:\Users\ma170\Desktop\project\node_modules\axios\dist\node\axios.cjs:5110:41)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async QwenModel.sendRequest (C:\Users\ma170\Desktop\project\qwen-model.js:46:24)
+    at async C:\Users\ma170\Desktop\project\routes\qwen.js:35:22
+[2026-03-13T06:40:05.678Z] [INFO] [req_1773384005678_e0szyqbds] 发送请求到Qwen模型: Hello, Qwen! 请介绍一下你自己。...
+[2026-03-13T06:40:06.003Z] [ERROR] [req_1773384005678_e0szyqbds] 请求失败，响应时间: 324ms
+Error: AxiosError: Request failed with status code 401
+    at settle (C:\Users\ma170\Desktop\project\node_modules\axios\dist\node\axios.cjs:2304:7)
+    at IncomingMessage.handleStreamEnd (C:\Users\ma170\Desktop\project\node_modules\axios\dist\node\axios.cjs:3772:13)
+    at IncomingMessage.emit (node:events:520:35)
+    at endReadableNT (node:internal/streams/readable:1701:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:89:21)
+    at Axios.request (C:\Users\ma170\Desktop\project\node_modules\axios\dist\node\axios.cjs:5110:41)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async QwenModel.sendRequest (C:\Users\ma170\Desktop\project\qwen-model.js:46:24)
+    at async C:\Users\ma170\Desktop\project\routes\qwen.js:35:22
+[2026-03-13T06:43:56.612Z] [INFO] [req_1773384236612_6xakmfndd] 发送请求到Qwen模型: Hello, Qwen! ?????????...
+[2026-03-13T06:43:56.613Z] [INFO] [req_1773384236612_6xakmfndd] API密钥格式: sk-208f40f...
+[2026-03-13T06:43:56.614Z] [INFO] [req_1773384236612_6xakmfndd] API URL: https://ark.cn-beijing.volces.com/api/v3/chat/completions
+[2026-03-13T06:43:56.861Z] [ERROR] [req_1773384236612_6xakmfndd] 请求失败，响应时间: 249ms
+Error: AxiosError: Request failed with status code 401
+    at settle (C:\Users\ma170\Desktop\project\node_modules\axios\dist\node\axios.cjs:2304:7)
+    at IncomingMessage.handleStreamEnd (C:\Users\ma170\Desktop\project\node_modules\axios\dist\node\axios.cjs:3772:13)
+    at IncomingMessage.emit (node:events:520:35)
+    at endReadableNT (node:internal/streams/readable:1701:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:89:21)
+    at Axios.request (C:\Users\ma170\Desktop\project\node_modules\axios\dist\node\axios.cjs:5110:41)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async QwenModel.sendRequest (C:\Users\ma170\Desktop\project\qwen-model.js:48:24)
+    at async C:\Users\ma170\Desktop\project\routes\qwen.js:35:22
+[2026-03-13T06:43:56.862Z] [ERROR] [req_1773384236612_6xakmfndd] 错误详情: {"error":{"code":"AuthenticationError","message":"The API key format is incorrect. Request id: 021773384236300c9a2a2bfec8b82a34b9075d10d5d2c5edf892f","param":"","type":"Unauthorized"}}
+[2026-03-13T06:46:17.621Z] [INFO] [req_1773384377621_mi8n9c38s] 发送请求到Qwen模型: Hello, Qwen! ?????????...
+[2026-03-13T06:46:17.623Z] [INFO] [req_1773384377621_mi8n9c38s] API密钥格式: sk-208f40f...
+[2026-03-13T06:46:17.624Z] [INFO] [req_1773384377621_mi8n9c38s] API URL: https://ark.cn-beijing.volces.com/api/v3/chat/completions
+[2026-03-13T06:46:17.625Z] [INFO] [req_1773384377621_mi8n9c38s] 使用模拟响应
+[2026-03-13T06:46:17.626Z] [INFO] [req_1773384377621_mi8n9c38s] 模拟请求成功，响应时间: 4ms
+[2026-03-13T06:46:40.516Z] [INFO] [req_1773384400516_49nm5e4rf] 发送请求到Qwen模型: Hello, Qwen! 请介绍一下你自己。...
+[2026-03-13T06:46:40.518Z] [INFO] [req_1773384400516_49nm5e4rf] API密钥格式: sk-208f40f...
+[2026-03-13T06:46:40.519Z] [INFO] [req_1773384400516_49nm5e4rf] API URL: https://ark.cn-beijing.volces.com/api/v3/chat/completions
+[2026-03-13T06:46:40.519Z] [INFO] [req_1773384400516_49nm5e4rf] 使用模拟响应
+[2026-03-13T06:46:40.520Z] [INFO] [req_1773384400516_49nm5e4rf] 模拟请求成功，响应时间: 4ms
+[2026-03-13T06:47:36.339Z] [INFO] [req_1773384456339_kc1y3mneq] 发送请求到Qwen模型: 什么计算机...
+[2026-03-13T06:47:36.340Z] [INFO] [req_1773384456339_kc1y3mneq] API密钥格式: sk-208f40f...
+[2026-03-13T06:47:36.341Z] [INFO] [req_1773384456339_kc1y3mneq] API URL: https://ark.cn-beijing.volces.com/api/v3/chat/completions
+[2026-03-13T06:47:36.342Z] [INFO] [req_1773384456339_kc1y3mneq] 使用模拟响应
+[2026-03-13T06:47:36.343Z] [INFO] [req_1773384456339_kc1y3mneq] 模拟请求成功，响应时间: 4ms
+[2026-03-13T06:52:15.246Z] [INFO] [req_1773384735246_m7gzxctlt] 发送请求到Qwen模型: Hello, Qwen! ?????????...
+[2026-03-13T06:52:15.248Z] [INFO] [req_1773384735246_m7gzxctlt] API密钥格式: sk-208f40f...
+[2026-03-13T06:52:15.249Z] [INFO] [req_1773384735246_m7gzxctlt] API URL: https://ark.cn-beijing.volces.com/api/v3/chat/completions
+[2026-03-13T06:52:15.480Z] [ERROR] [req_1773384735246_m7gzxctlt] 请求失败，响应时间: 234ms
+Error: AxiosError: Request failed with status code 401
+    at settle (C:\Users\ma170\Desktop\project\node_modules\axios\dist\node\axios.cjs:2304:7)
+    at IncomingMessage.handleStreamEnd (C:\Users\ma170\Desktop\project\node_modules\axios\dist\node\axios.cjs:3772:13)
+    at IncomingMessage.emit (node:events:520:35)
+    at endReadableNT (node:internal/streams/readable:1701:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:89:21)
+    at Axios.request (C:\Users\ma170\Desktop\project\node_modules\axios\dist\node\axios.cjs:5110:41)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async QwenModel.sendRequest (C:\Users\ma170\Desktop\project\qwen-model.js:48:24)
+    at async C:\Users\ma170\Desktop\project\routes\qwen.js:35:22
+[2026-03-13T06:52:15.482Z] [ERROR] [req_1773384735246_m7gzxctlt] 错误详情: {"error":{"code":"AuthenticationError","message":"The API key format is incorrect. Request id: 021773384734908a7f4d4af3e382e8c5fe721af27b2ecdf26c0d2","param":"","type":"Unauthorized"}}
+[2026-03-13T06:53:14.920Z] [INFO] [req_1773384794920_3wacd5hrx] 发送请求到Qwen模型: Hello, Qwen! 请介绍一下你自己。...
+[2026-03-13T06:53:14.921Z] [INFO] [req_1773384794920_3wacd5hrx] API密钥格式: sk-208f40f...
+[2026-03-13T06:53:14.922Z] [INFO] [req_1773384794920_3wacd5hrx] API URL: https://ark.cn-beijing.volces.com/api/v3/chat/completions
+[2026-03-13T06:53:15.125Z] [ERROR] [req_1773384794920_3wacd5hrx] 请求失败，响应时间: 205ms
+Error: AxiosError: Request failed with status code 401
+    at settle (C:\Users\ma170\Desktop\project\node_modules\axios\dist\node\axios.cjs:2304:7)
+    at IncomingMessage.handleStreamEnd (C:\Users\ma170\Desktop\project\node_modules\axios\dist\node\axios.cjs:3772:13)
+    at IncomingMessage.emit (node:events:520:35)
+    at endReadableNT (node:internal/streams/readable:1701:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:89:21)
+    at Axios.request (C:\Users\ma170\Desktop\project\node_modules\axios\dist\node\axios.cjs:5110:41)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async QwenModel.sendRequest (C:\Users\ma170\Desktop\project\qwen-model.js:48:24)
+    at async C:\Users\ma170\Desktop\project\routes\qwen.js:35:22
+[2026-03-13T06:53:15.127Z] [ERROR] [req_1773384794920_3wacd5hrx] 错误详情: {"error":{"code":"AuthenticationError","message":"The API key format is incorrect. Request id: 0217733847945703092798188ab5941c5f23c4f47e04b6ecfc9cb","param":"","type":"Unauthorized"}}
+[2026-03-13T06:54:34.340Z] [INFO] [req_1773384874340_rvk5qa28n] 发送请求到Qwen模型: Hello, Qwen! ?????????...
+[2026-03-13T06:54:34.341Z] [INFO] [req_1773384874340_rvk5qa28n] API密钥格式: sk-208f40f...
+[2026-03-13T06:54:34.342Z] [INFO] [req_1773384874340_rvk5qa28n] API URL: https://ark.cn-beijing.volces.com/api/v3/chat/completions
+[2026-03-13T06:54:34.343Z] [INFO] [req_1773384874340_rvk5qa28n] 使用模拟响应
+[2026-03-13T06:54:34.344Z] [INFO] [req_1773384874340_rvk5qa28n] 模拟请求成功，响应时间: 4ms
+[2026-03-13T06:54:57.635Z] [INFO] [req_1773384897635_7oquzio5z] 发送请求到Qwen模型: Hello, Qwen! 请介绍一下你自己。...
+[2026-03-13T06:54:57.636Z] [INFO] [req_1773384897635_7oquzio5z] API密钥格式: sk-208f40f...
+[2026-03-13T06:54:57.637Z] [INFO] [req_1773384897635_7oquzio5z] API URL: https://ark.cn-beijing.volces.com/api/v3/chat/completions
+[2026-03-13T06:54:57.638Z] [INFO] [req_1773384897635_7oquzio5z] 使用模拟响应
+[2026-03-13T06:54:57.638Z] [INFO] [req_1773384897635_7oquzio5z] 模拟请求成功，响应时间: 3ms
+[2026-03-13T06:55:13.507Z] [INFO] [req_1773384913507_704f33ipp] 发送请求到Qwen模型: 什么是计算机...
+[2026-03-13T06:55:13.508Z] [INFO] [req_1773384913507_704f33ipp] API密钥格式: sk-208f40f...
+[2026-03-13T06:55:13.509Z] [INFO] [req_1773384913507_704f33ipp] API URL: https://ark.cn-beijing.volces.com/api/v3/chat/completions
+[2026-03-13T06:55:13.510Z] [INFO] [req_1773384913507_704f33ipp] 使用模拟响应
+[2026-03-13T06:55:13.510Z] [INFO] [req_1773384913507_704f33ipp] 模拟请求成功，响应时间: 3ms
+[2026-03-13T06:55:15.127Z] [INFO] [req_1773384915127_8893aeo6q] 发送请求到Qwen模型: 什么是计算机...
+[2026-03-13T06:55:15.130Z] [INFO] [req_1773384915127_8893aeo6q] API密钥格式: sk-208f40f...
+[2026-03-13T06:55:15.131Z] [INFO] [req_1773384915127_8893aeo6q] API URL: https://ark.cn-beijing.volces.com/api/v3/chat/completions
+[2026-03-13T06:55:15.133Z] [INFO] [req_1773384915127_8893aeo6q] 使用模拟响应
+[2026-03-13T06:55:15.134Z] [INFO] [req_1773384915127_8893aeo6q] 模拟请求成功，响应时间: 7ms
+[2026-03-13T06:55:19.591Z] [INFO] [req_1773384919591_lwtkk03ea] 发送请求到Qwen模型: 什么是计算机...
+[2026-03-13T06:55:19.592Z] [INFO] [req_1773384919591_lwtkk03ea] API密钥格式: sk-208f40f...
+[2026-03-13T06:55:19.593Z] [INFO] [req_1773384919591_lwtkk03ea] API URL: https://ark.cn-beijing.volces.com/api/v3/chat/completions
+[2026-03-13T06:55:19.593Z] [INFO] [req_1773384919591_lwtkk03ea] 使用模拟响应
+[2026-03-13T06:55:19.594Z] [INFO] [req_1773384919591_lwtkk03ea] 模拟请求成功，响应时间: 3ms
+[2026-03-13T06:55:33.186Z] [INFO] [req_1773384933186_xw4ud90p5] 发送请求到Qwen模型: Hello, Qwen! 请介绍一下你自己。...
+[2026-03-13T06:55:33.187Z] [INFO] [req_1773384933186_xw4ud90p5] API密钥格式: sk-208f40f...
+[2026-03-13T06:55:33.188Z] [INFO] [req_1773384933186_xw4ud90p5] API URL: https://ark.cn-beijing.volces.com/api/v3/chat/completions
+[2026-03-13T06:55:33.189Z] [INFO] [req_1773384933186_xw4ud90p5] 使用模拟响应
+[2026-03-13T06:55:33.189Z] [INFO] [req_1773384933186_xw4ud90p5] 模拟请求成功，响应时间: 3ms
+[2026-03-13T06:56:33.343Z] [INFO] [req_1773384993343_ur0ravdxs] 发送请求到Qwen模型: Hello, Qwen! 请介绍一下你自己。...
+[2026-03-13T06:56:33.344Z] [INFO] [req_1773384993343_ur0ravdxs] API密钥格式: sk-208f40f...
+[2026-03-13T06:56:33.345Z] [INFO] [req_1773384993343_ur0ravdxs] API URL: https://ark.cn-beijing.volces.com/api/v3/chat/completions
+[2026-03-13T06:56:33.345Z] [INFO] [req_1773384993343_ur0ravdxs] 使用模拟响应
+[2026-03-13T06:56:33.346Z] [INFO] [req_1773384993343_ur0ravdxs] 模拟请求成功，响应时间: 3ms
+[2026-03-13T07:17:43.675Z] [INFO] [req_1773386263675_n4i3exs79] 发送请求到Qwen模型: Hello, Qwen! 请介绍一下你自己。...
+[2026-03-13T07:17:43.676Z] [INFO] [req_1773386263675_n4i3exs79] API密钥格式: sk-208f40f...
+[2026-03-13T07:17:43.677Z] [INFO] [req_1773386263675_n4i3exs79] API URL: https://ark.cn-beijing.volces.com/api/v3/chat/completions
+[2026-03-13T07:17:43.678Z] [INFO] [req_1773386263675_n4i3exs79] 使用模拟响应
+[2026-03-13T07:17:43.679Z] [INFO] [req_1773386263675_n4i3exs79] 模拟请求成功，响应时间: 3ms
+[2026-03-13T07:17:56.595Z] [INFO] [req_1773386276595_hdz6zfvef] 发送请求到Qwen模型: 你好
+...
+[2026-03-13T07:17:56.596Z] [INFO] [req_1773386276595_hdz6zfvef] API密钥格式: sk-208f40f...
+[2026-03-13T07:17:56.596Z] [INFO] [req_1773386276595_hdz6zfvef] API URL: https://ark.cn-beijing.volces.com/api/v3/chat/completions
+[2026-03-13T07:17:56.597Z] [INFO] [req_1773386276595_hdz6zfvef] 使用模拟响应
+[2026-03-13T07:17:56.598Z] [INFO] [req_1773386276595_hdz6zfvef] 模拟请求成功，响应时间: 3ms
+[2026-03-13T07:22:18.131Z] [INFO] [req_1773386538131_pxbvzvuml] 发送请求到Qwen模型: Hello, Qwen! ?????????...
+[2026-03-13T07:22:18.133Z] [INFO] [req_1773386538131_pxbvzvuml] API密钥格式: sk-208f40f...
+[2026-03-13T07:22:18.134Z] [INFO] [req_1773386538131_pxbvzvuml] API URL: https://ark.cn-beijing.volces.com/api/v3/chat/completions
+[2026-03-13T07:22:18.134Z] [INFO] [req_1773386538131_pxbvzvuml] 使用模拟响应
+[2026-03-13T07:22:18.135Z] [INFO] [req_1773386538131_pxbvzvuml] 模拟请求成功，响应时间: 4ms
+[2026-03-13T07:22:40.446Z] [INFO] [req_1773386560446_mjsjbd6jr] 发送请求到Qwen模型: Hello, Qwen! 请介绍一下你自己。...
+[2026-03-13T07:22:40.447Z] [INFO] [req_1773386560446_mjsjbd6jr] API密钥格式: sk-208f40f...
+[2026-03-13T07:22:40.448Z] [INFO] [req_1773386560446_mjsjbd6jr] API URL: https://ark.cn-beijing.volces.com/api/v3/chat/completions
+[2026-03-13T07:22:40.448Z] [INFO] [req_1773386560446_mjsjbd6jr] 使用模拟响应
+[2026-03-13T07:22:40.449Z] [INFO] [req_1773386560446_mjsjbd6jr] 模拟请求成功，响应时间: 3ms
+[2026-03-13T07:22:54.948Z] [INFO] [req_1773386574948_myn6vitad] 发送请求到Qwen模型: Hello...
+[2026-03-13T07:22:54.949Z] [INFO] [req_1773386574948_myn6vitad] API密钥格式: sk-208f40f...
+[2026-03-13T07:22:54.950Z] [INFO] [req_1773386574948_myn6vitad] API URL: https://ark.cn-beijing.volces.com/api/v3/chat/completions
+[2026-03-13T07:22:54.951Z] [INFO] [req_1773386574948_myn6vitad] 使用模拟响应
+[2026-03-13T07:22:54.952Z] [INFO] [req_1773386574948_myn6vitad] 模拟请求成功，响应时间: 4ms
+[2026-03-13T07:31:46.953Z] [INFO] [req_1773387106953_un5cvi0vq] 发送请求到Qwen模型: Hello, Qwen! 请介绍一下你自己。...
+[2026-03-13T07:31:46.954Z] [INFO] [req_1773387106953_un5cvi0vq] API密钥格式: sk-208f40f...
+[2026-03-13T07:31:46.955Z] [INFO] [req_1773387106953_un5cvi0vq] API URL: https://ark.cn-beijing.volces.com/api/v3/chat/completions
+[2026-03-13T07:31:46.956Z] [INFO] [req_1773387106953_un5cvi0vq] 使用模拟响应
+[2026-03-13T07:31:46.957Z] [INFO] [req_1773387106953_un5cvi0vq] 模拟请求成功，响应时间: 4ms
+[2026-03-13T07:33:41.779Z] [INFO] [req_1773387221779_fjh4jsxem] 发送请求到Qwen模型: Hello, Qwen! ?????????...
+[2026-03-13T07:33:41.781Z] [INFO] [req_1773387221779_fjh4jsxem] API密钥格式: sk-208f40f...
+[2026-03-13T07:33:41.783Z] [INFO] [req_1773387221779_fjh4jsxem] API URL: https://dashscope.aliyuncs.com/compatible-mode/v1
+[2026-03-13T07:33:41.784Z] [INFO] [req_1773387221779_fjh4jsxem] 使用模拟响应
+[2026-03-13T07:33:41.785Z] [INFO] [req_1773387221779_fjh4jsxem] 模拟请求成功，响应时间: 6ms
+[2026-03-13T07:33:54.762Z] [INFO] [req_1773387234762_v93l3pmo9] 发送请求到Qwen模型: Hello, Qwen! 请介绍一下你自己。...
+[2026-03-13T07:33:54.764Z] [INFO] [req_1773387234762_v93l3pmo9] API密钥格式: sk-208f40f...
+[2026-03-13T07:33:54.764Z] [INFO] [req_1773387234762_v93l3pmo9] API URL: https://dashscope.aliyuncs.com/compatible-mode/v1
+[2026-03-13T07:33:54.765Z] [INFO] [req_1773387234762_v93l3pmo9] 使用模拟响应
+[2026-03-13T07:33:54.766Z] [INFO] [req_1773387234762_v93l3pmo9] 模拟请求成功，响应时间: 4ms
+[2026-03-13T07:36:21.461Z] [INFO] [req_1773387381461_inf7vmf38] 发送请求到Qwen模型: Hello, Qwen! 请介绍一下你自己。...
+[2026-03-13T07:36:21.462Z] [INFO] [req_1773387381461_inf7vmf38] API密钥格式: sk-208f40f...
+[2026-03-13T07:36:21.462Z] [INFO] [req_1773387381461_inf7vmf38] API URL: https://dashscope.aliyuncs.com/compatible-mode/v1
+[2026-03-13T07:36:21.464Z] [INFO] [req_1773387381461_inf7vmf38] 使用模拟响应
+[2026-03-13T07:36:21.465Z] [INFO] [req_1773387381461_inf7vmf38] 模拟请求成功，响应时间: 4ms
+[2026-03-13T07:54:55.414Z] [INFO] [req_1773388495413_lesslhc3m] 发送请求到Qwen模型: Hello, Qwen! 请介绍一下你自己。...
+[2026-03-13T07:55:04.052Z] [INFO] [req_1773388495413_lesslhc3m] 请求成功，响应时间: 8639ms
+[2026-03-13T07:55:41.125Z] [INFO] [req_1773388541125_j1ayd645w] 发送请求到Qwen模型: 你好...
+[2026-03-13T07:55:43.054Z] [INFO] [req_1773388541125_j1ayd645w] 请求成功，响应时间: 1929ms
+[2026-03-13T07:59:45.913Z] [INFO] [req_1773388785913_cyp71h2oa] 发送请求到Qwen模型: 什么是python
+...
+[2026-03-13T08:00:07.034Z] [INFO] [req_1773388785913_cyp71h2oa] 请求成功，响应时间: 21121ms
+[2026-03-13T08:00:46.788Z] [INFO] [req_1773388846788_lsh8qve1k] 发送请求到Qwen模型: 你好...
+[2026-03-13T08:00:48.270Z] [INFO] [req_1773388846788_lsh8qve1k] 请求成功，响应时间: 1482ms
+[2026-03-13T08:04:21.429Z] [INFO] [req_1773389061429_7xl590759] 发送请求到Qwen模型: 你是谁...
+[2026-03-13T08:04:23.592Z] [INFO] [req_1773389061429_7xl590759] 请求成功，响应时间: 2163ms
+[2026-03-13T08:06:59.405Z] [INFO] [req_1773389219405_0spb349pf] 发送请求到Qwen模型: 你好...
+[2026-03-13T08:07:00.992Z] [INFO] [req_1773389219405_0spb349pf] 请求成功，响应时间: 1587ms
+[2026-03-13T08:07:25.387Z] [INFO] [req_1773389245387_mxo8u1hhr] 发送请求到Qwen模型: 计算机专业详细介绍...
+[2026-03-13T08:07:49.804Z] [INFO] [req_1773389245387_mxo8u1hhr] 请求成功，响应时间: 24417ms
+[2026-03-13T08:10:10.858Z] [INFO] [req_1773389410858_9k8hrb3pe] 发送请求到Qwen模型: 毛泽东...
+[2026-03-13T08:10:20.073Z] [INFO] [req_1773389410858_9k8hrb3pe] 请求成功，响应时间: 9215ms
+[2026-03-13T08:14:48.449Z] [INFO] [req_1773389688449_arpjp4stb] 发送请求到Qwen模型: 异常情况检测...
+[2026-03-13T08:15:15.529Z] [INFO] [req_1773389688449_arpjp4stb] 请求成功，响应时间: 27080ms
+[2026-03-13T08:16:41.675Z] [INFO] [req_1773389801675_x6a5j5gwu] 发送请求到Qwen模型: python 是什么
+...
+[2026-03-13T08:16:56.147Z] [INFO] [req_1773389801675_x6a5j5gwu] 请求成功，响应时间: 14472ms
+[2026-03-13T09:18:17.260Z] [INFO] [req_1773393497260_t8iyy5ovf] 发送请求到Qwen模型: python是什么
+...
+[2026-03-13T09:18:32.707Z] [INFO] [req_1773393497260_t8iyy5ovf] 请求成功，响应时间: 15447ms
+[2026-03-13T09:18:46.333Z] [INFO] [req_1773393526333_uxp0jqi8k] 发送请求到Qwen模型: 1+2=
+...
+[2026-03-13T09:18:47.017Z] [INFO] [req_1773393526333_uxp0jqi8k] 请求成功，响应时间: 684ms
+[2026-03-13T13:08:12.566Z] [INFO] [req_1773407292566_yhl0ocbox] 发送请求到Qwen模型: Hello, Qwen! 请介绍一下你自己。...
+[2026-03-13T13:08:20.082Z] [INFO] [req_1773407292566_yhl0ocbox] 请求成功，响应时间: 7516ms
+[2026-03-13T13:09:24.876Z] [INFO] [req_1773407364876_stc3bql3q] 发送请求到Qwen模型: hello
+...
+[2026-03-13T13:09:25.656Z] [INFO] [req_1773407364876_stc3bql3q] 请求成功，响应时间: 780ms
+[2026-03-13T13:10:44.748Z] [INFO] [req_1773407444748_koz3vuhll] 发送请求到Qwen模型: 91
+...
+[2026-03-13T13:10:48.713Z] [INFO] [req_1773407444748_koz3vuhll] 请求成功，响应时间: 3965ms
+[2026-03-13T13:11:27.418Z] [INFO] [req_1773407487418_kuiqez224] 发送请求到Qwen模型: 中国
+...
+[2026-03-13T13:11:33.346Z] [INFO] [req_1773407487418_kuiqez224] 请求成功，响应时间: 5928ms
